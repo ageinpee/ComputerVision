@@ -45,20 +45,28 @@ ax[0,2].imshow(lennab, cmap='Greys_r')
 ax[0,2].set_title('Blaukanal')
 
 ax[1,0].imshow(lennainv)
-
 ax[1,0].set_title('RGB invertiert')
-
-#4. Put the colour-channels together in a wrong order.
-("\n"
- "Wenn die Farbkanäle in falscher Reihenfolge zusammengesetzt werden, \n"
- "    also zum Beispiel der Rote und Grüne Farbkanal vertauscht, werden\n"
- "    diese als die jeweiligen Farben interpretiert. Das beudeutet, die \n"
- "    Rot-Werte im neuen Bild entsprechen den Grün-Werten im alten Bild\n"
- "    und die Grün-Werte im neuen Bild den Rot-Werten im alten Bild. \n")
 
 ax[1,1].imshow(lenna)
 ax[1,1].set_title('Original')
+
+
+#4. Put the colour-channels together in a wrong order.
+"""
+Wenn die Farbkanäle in falscher Reihenfolge zusammengesetzt werden, 
+    also zum Beispiel der Rote und Grüne Farbkanal vertauscht, werden
+    diese als die jeweiligen Farben interpretiert. Das beudeutet, die 
+    Rot-Werte im neuen Bild entsprechen den Grün-Werten im alten Bild
+    und die Grün-Werte im neuen Bild den Rot-Werten im alten Bild.
+"""
+lenna_switched = lenna
+lenna_switched[:,:,0] = lennag
+lenna_switched[:,:,1] = lennar
+
+ax[1,2].imshow(lenna_switched)
+ax[1,2].set_title('vertauschte Kanäle')
 plt.show(block=True)  # This command shows the plt-windows. Not necessary in all IDEs
+
 
 #6. Achsen muessen ausgewaehlt werden
 rgbmean = np.mean(lenna, axis=(0,1))
