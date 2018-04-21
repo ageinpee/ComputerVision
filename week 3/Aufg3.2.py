@@ -2,7 +2,7 @@
 """
 Created on Fri Apr 20 15:40:51 2018
 
-@author: Moritz Lahann
+@author: Moritz Lahann(Matr.-Nummer), Henrik Peters(6945965), Michael Huang(Matr.-Nummer)
 """
 
 import numpy as np
@@ -139,4 +139,3 @@ print np.sum(valLabels==Aufg32Farbe(219)) / float(valImgs.shape[0]) * 100
 
 #Optimales Ergebnis is 56.666...% mit 219 bins
 #Wenn ich mich richtig erinnere nicht viel besser als mit Graustufenhistogrammen
-    
