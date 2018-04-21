@@ -9,7 +9,6 @@ import numpy as np
 from scipy import misc
 import matplotlib.pyplot as plt
 from skimage.io import imread, imsave
-from tabulate import tabulate
 
 d = np.load('./trainingsDaten2.npz')
 trImgs = d['data']
@@ -95,18 +94,6 @@ def getWerte(i, Aufg):
             else:
                 schiff+=1
     return [auto, hirsch, schiff]
-                
-    #print tabulate([['eigtl. Auto', len([(valLabels==1 and labels1==1)]), 
-    #                                np.sum(valLabels==1 and labels1==4),
-    #                                np.sum(valLabels==1 and labels1==8)],
-    #                ['eigtl. Hirsch', np.sum(valLabels==4 and labels1==1),
-    #                                  np.sum(valLabels==4 and labels1==4),
-    #                                  np.sum(valLabels==4 and labels1==8)],
-    #                ['eigtl. Schiff', np.sum(valLabels==8 and labels1==1),
-    #                                 np.sum(valLabels==8 and labels1==4),
-    #                                  np.sum(valLabels==8 and labels1==8)]],
-    #                headers = ['Auto vgs.', 'Hirsch vgs.', 'Schiff vgs.'])
-                    
 
 print "Vorhersagen: Auto, Hirsch, Schiff"
 print "Eigentlich Auto:  ", getWerte(1,1)
