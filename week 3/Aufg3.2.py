@@ -10,13 +10,12 @@ from scipy import misc
 import matplotlib.pyplot as plt
 from skimage.io import imread, imsave
 
-
-lenna = imread("./Lenna.png")
-
-
 #Aufg. 1
 
-#2. was ist mit zusammenfuegen gemeint?
+#1. Load Lenna.png
+lenna = imread("./Lenna.png")
+
+#2. Divide Lenna.png by colour-channels and put them together as a greyscale-image
 lennar = lenna[:,:,0]
 lennag = lenna[:,:,1]
 lennab = lenna[:,:,2]
@@ -48,6 +47,14 @@ ax[0,2].set_title('Blaukanal')
 ax[1,0].imshow(lennainv)
 
 ax[1,0].set_title('RGB invertiert')
+
+#4. Put the colour-channels together in a wrong order.
+("\n"
+ "Wenn die Farbkanäle in falscher Reihenfolge zusammengesetzt werden, \n"
+ "    also zum Beispiel der Rote und Grüne Farbkanal vertauscht, werden\n"
+ "    diese als die jeweiligen Farben interpretiert. Das beudeutet, die \n"
+ "    Rot-Werte im neuen Bild entsprechen den Grün-Werten im alten Bild\n"
+ "    und die Grün-Werte im neuen Bild den Rot-Werten im alten Bild. \n")
 
 ax[1,1].imshow(lenna)
 ax[1,1].set_title('Original')
