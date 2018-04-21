@@ -27,8 +27,7 @@ for pixel_x in range(lenna.shape[0]):
         lenna_grey[pixel_x][pixel_y] = (int(lennar[pixel_x][pixel_y]) +
                                         int(lennag[pixel_x][pixel_y]) +
                                         int(lennab[pixel_x][pixel_y]))/3
-plt.imshow(lenna_grey)
-plt.show(block=True)
+plt.imshow(lenna_grey, cmap='Greys_r')
 
 #5. Alle Werte werden invertiert
 lennainv = 255-lenna
@@ -36,24 +35,27 @@ lennainv = 255-lenna
 #3. heller -> farbe staerker vorhanden
 fig, ax = plt.subplots(2, 3)
 
-ax[0,0].imshow(lennar, cmap = 'Greys_r')
+ax[0,0].imshow(lennar, cmap='Greys_r')
 ax[0,0].set_title('Rotkanal')
 
-ax[0,1].imshow(lennag, cmap = 'Greys_r')
+ax[0,1].imshow(lennag, cmap='Greys_r')
 ax[0,1].set_title('Gruenkanal')
 
-ax[0,2].imshow(lennab, cmap = 'Greys_r')
+ax[0,2].imshow(lennab, cmap='Greys_r')
+
 ax[0,2].set_title('Blaukanal')
 
 ax[1,0].imshow(lennainv)
+
 ax[1,0].set_title('RGB invertiert')
 
 ax[1,1].imshow(lenna)
 ax[1,1].set_title('Original')
+plt.show(block=True)  # This command shows the plt-windows. Not necessary in all IDEs
 
 #6. Achsen muessen ausgewaehlt werden
-rgbmean = np.mean(lenna, axis = (0,1))
-rgbstd = np.std(lenna, axis = (0,1))
+rgbmean = np.mean(lenna, axis=(0,1))
+rgbstd = np.std(lenna, axis=(0,1))
 
 #Aufg. 2
 
