@@ -10,6 +10,7 @@ from scipy import misc
 import matplotlib.pyplot as plt
 from skimage.io import imread, imsave
 
+
 lenna = imread("./Lenna.png")
 
 
@@ -19,6 +20,15 @@ lenna = imread("./Lenna.png")
 lennar = lenna[:,:,0]
 lennag = lenna[:,:,1]
 lennab = lenna[:,:,2]
+
+lenna_grey = lenna
+for pixel_x in range(lenna.shape[0]):
+    for pixel_y in range(lenna.shape[1]):
+        lenna_grey[pixel_x][pixel_y] = (int(lennar[pixel_x][pixel_y]) +
+                                        int(lennag[pixel_x][pixel_y]) +
+                                        int(lennab[pixel_x][pixel_y]))/3
+plt.imshow(lenna_grey)
+plt.show(block=True)
 
 #5. Alle Werte werden invertiert
 lennainv = 255-lenna
@@ -127,5 +137,4 @@ print np.sum(valLabels==Aufg32Farbe(219)) / float(valImgs.shape[0]) * 100
 
 #Optimales Ergebnis is 56.666...% mit 219 bins
 #Wenn ich mich richtig erinnere nicht viel besser als mit Graustufenhistogrammen
-    
     
