@@ -59,16 +59,13 @@ Wenn die Farbkanäle in falscher Reihenfolge zusammengesetzt werden,
     Rot-Werte im neuen Bild entsprechen den Grün-Werten im alten Bild
     und die Grün-Werte im neuen Bild den Rot-Werten im alten Bild.
 """
-lenna_switched = lenna
-lenna_switched[:,:,0] = lennag
-lenna_switched[:,:,1] = lennar
 
-ax[1,2].imshow(lenna_switched)
-ax[1,2].set_title('vertauschte Kanäle')
 plt.show(block=True)  # This command shows the plt-windows. Not necessary in all IDEs
+    # Opening dialog windows have to be closed before the program continues.
 
 
-#6. Achsen muessen ausgewaehlt werden
+#6. Calculate mean and standard deviation without dividing into colour-channels
+# --> Über die Methoden mean und std mit Angabe der Axen.
 rgbmean = np.mean(lenna, axis=(0,1))
 rgbstd = np.std(lenna, axis=(0,1))
 
@@ -100,9 +97,11 @@ def Aufg31Farbe():
         labels.append(trLabels[dists.index(min(dists))])
     
     return labels  
-
-print np.sum(valLabels==Aufg31Farbe())
-print np.sum(valLabels==Aufg31Farbe()) / float(valImgs.shape[0]) * 100
+print 'Task 2: assign pictures to a group of pictures'
+print '----------------------------------------------------------------------------'
+print np.sum(valLabels==Aufg31Farbe()), 'Labels were chosen correct'
+print np.sum(valLabels==Aufg31Farbe()) / float(valImgs.shape[0]) * 100, '% were chosen correct'
+print '----------------------------------------------------------------------------'
 
 #50% Genauigkeit, also deutlich besseres Ergebnis
 
@@ -148,9 +147,12 @@ def optimalBins():
         percentages.append(Aufg32Farbe(i))
     return max(percentages), percentages.index(max(percentages))
 
+
+print 'Task 3: assign pictures to a group of pictures with the help of histograms'
+print '----------------------------------------------------------------------------'
 print optimalBins()
-print np.sum(valLabels==Aufg32Farbe(219))
-print np.sum(valLabels==Aufg32Farbe(219)) / float(valImgs.shape[0]) * 100
+print np.sum(valLabels==Aufg32Farbe(219)), 'were chosen correct'
+print np.sum(valLabels==Aufg32Farbe(219)) / float(valImgs.shape[0]) * 100, '% were chosen correct'
 
 #Optimales Ergebnis is 56.666...% mit 219 bins
 #Wenn ich mich richtig erinnere nicht viel besser als mit Graustufenhistogrammen
