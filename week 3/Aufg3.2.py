@@ -130,7 +130,7 @@ def Aufg32Farbe(bins):
     labels = []
     
     for count in range(len(valHists)):
-        dists = []    
+        dists = []
         for i in range(len(trHists)):
             dists.append(np.linalg.norm(np.asarray(trHists[i])-np.asarray(valHists[count])))
         labels.append(trLabels[dists.index(min(dists))])
@@ -143,6 +143,7 @@ def makeHist(img, nrBins):
 #Das kann ein bisschen dauern je nach PC
 def optimalBins():
     percentages = []
+
     for i in range(1,256):
         percentages.append(Aufg32Farbe(i))
     return max(percentages), percentages.index(max(percentages))
