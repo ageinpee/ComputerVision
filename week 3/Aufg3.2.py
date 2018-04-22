@@ -151,6 +151,7 @@ def optimalBins():
 print 'Task 3: assign pictures to a group of pictures with the help of histograms'
 print '----------------------------------------------------------------------------'
 print optimalBins()
+print '-->'
 print np.sum(valLabels==Aufg32Farbe(219)), 'were chosen correct'
 print np.sum(valLabels==Aufg32Farbe(219)) / float(valImgs.shape[0]) * 100, '% were chosen correct'
 
