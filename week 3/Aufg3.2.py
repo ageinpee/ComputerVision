@@ -138,17 +138,28 @@ def makeHist(img, nrBins):
 
 #Das kann ein bisschen dauern je nach PC
 def optimalBins():
-    percentages = []
+    solutions = []
 
     for i in range(1,256):
-        percentages.append(Aufg32Farbe(i))
-    return max(percentages), percentages.index(max(percentages))
+        solutions.append(Aufg32Farbe(i))
+    best_sol = solutions[0]
+    mult_sols = []
+
+    for sol in solutions:
+        if np.sum(sol==valLabels) > np.sum(best_sol==valLabels):
+            best_sol = sol
+    for sol in solutions:
+        if np.sum(sol==valLabels) == np.sum(best_sol==valLabels):
+            mult_sols.append(sol)
+            mult_sols.append(solutions.index(sol)+1)
+
+    return mult_sols
 
 
 print 'Task 3: assign pictures to a group of pictures with the help of histograms'
 print '----------------------------------------------------------------------------'
 print optimalBins()
-print '--> optimal number of bins for the histograms'
+print '--> optimal histogram solution and the number of bins used. Multiple solutions possible.'
 print np.sum(valLabels==Aufg32Farbe(219)), 'were chosen correct'
 print np.sum(valLabels==Aufg32Farbe(219)) / float(valImgs.shape[0]) * 100, '% were chosen correct'
 
