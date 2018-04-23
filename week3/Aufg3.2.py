@@ -2,7 +2,7 @@
 """
 Created on Fri Apr 20 15:40:51 2018
 
-@author: Moritz Lahann(Matr.-Nummer), Henrik Peters(6945965), Michael Huang(Matr.-Nummer)
+@author: Moritz Lahann(Matr.-Nummer), Henrik Peters(6945965), Michael Huang(6947879)
 """
 
 import numpy as np
