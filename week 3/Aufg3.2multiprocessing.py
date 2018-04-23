@@ -8,6 +8,7 @@ Created on Fri Apr 20 15:40:51 2018
 import numpy as np
 import matplotlib.pyplot as plt
 from skimage.io import imread
+from multiprocessing import Pool
 
 #Aufg. 1
 
@@ -139,9 +140,12 @@ def makeHist(img, nrBins):
 #Das kann ein bisschen dauern je nach PC
 def optimalBins():
     percentages = []
-
-    for i in range(1,256):
-        percentages.append(Aufg32Farbe(i))
+    if __name__ == '__main__':
+        p = Pool(processes=4)
+        percentages = p.map(Aufg32Farbe, range(256))
+    
+    #for i in range(1,256):
+    #    percentages.append(Aufg32Farbe(i))
     return max(percentages), percentages.index(max(percentages))
 
 
