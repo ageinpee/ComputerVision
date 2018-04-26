@@ -11,8 +11,8 @@ from skimage.io import imread
 import glob
 from skimage import transform
 
-val_imgs = glob.glob('./ComputerVision-master/week4/haribo1/hariboVal/*.png')
-tr_imgs = glob.glob('./ComputerVision-master/week4/haribo1/hariboTrain/*.png')
+val_imgs = glob.glob('./haribo1/hariboVal/*.png')
+tr_imgs = glob.glob('./haribo1/hariboTrain/*.png')
 
 val_labels = [x.split('/')[-1].split('.')[0].split('_')[0] for x in val_imgs]
 tr_labels = [x.split('/')[-1].split('.')[0].split('_')[0] for x in tr_imgs]
