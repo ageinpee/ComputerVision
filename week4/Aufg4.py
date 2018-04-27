@@ -74,6 +74,14 @@ def show_imgs_rgb(imgs, subplot_x, subplot_y):
     plt.pyplot.show(block=True)
 
 
+def bbox(img):
+    rows = np.any(img, axis=1)
+    cols = np.any(img, axis=0)
+    rmin, rmax = np.where(rows)[0][[0, -1]]
+    cmin, cmax = np.where(cols)[0][[0, -1]]
+    return rmin, rmax, cmin, cmax
+
+
 # task functions
 def classify_means():
     val_means = np.mean(np.array(val_imgs), axis=(1,2))
@@ -158,8 +166,24 @@ def binarize_otsu():
 
 
 def create_bounding_boxes():
-    return 'bounding boxes still have to be created'
+    binarys = binarize()
+    val_binarys = binarys[0]
+    tr_binarys = binarys[1]
 
+    boxes = []
+    for img in tr_binarys:
+        boxes.append(bbox(img))
+    print boxes
+
+    tr_imgs_boxed =[]
+    for i,img in enumerate(tr_imgs):
+        img = np.split(img, [boxes[i][0], boxes[i][1]])
+        img = np.split(img[1], [boxes[i][2], boxes[i][3]])
+        tr_imgs_boxed.append(img)
+
+    plt.pyplot.imshow(tr_imgs_boxed[0])
+    #show_imgs_hsv(tr_imgs_boxed, 3, 4)
+    return 'bounding boxes not working'
 
 
 if __name__ == '__main__':
