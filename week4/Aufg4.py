@@ -11,6 +11,7 @@ from skimage.io import imread
 import glob
 from skimage.filters import threshold_otsu
 import itertools
+from skimage.measure import regionprops
 
 val_imgs = glob.glob('./haribo1/hariboVal/*.png')
 tr_imgs = glob.glob('./haribo1/hariboTrain/*.png')
@@ -75,12 +76,14 @@ def show_imgs_rgb(imgs, subplot_x, subplot_y):
 
 
 def bbox(img):
-    rows = np.any(img, axis=1)
-    cols = np.any(img, axis=0)
-    rmin, rmax = np.where(rows)[0][[0, -1]]
-    cmin, cmax = np.where(cols)[0][[0, -1]]
-    return rmin, rmax, cmin, cmax
-
+    #rows = np.any(img, axis=1)
+    #cols = np.any(img, axis=0)
+    #rmin, rmax = np.where(rows)[0][[0, -1]]
+    #cmin, cmax = np.where(cols)[0][[0, -1]]
+    #return rmin, rmax, cmin, cmax
+    img = img.astype(np.int)
+    props = regionprops(img)[0]
+    return props.bbox
 
 # task functions
 def classify_means():
@@ -170,19 +173,27 @@ def create_bounding_boxes():
     val_binarys = binarys[0]
     tr_binarys = binarys[1]
 
-    boxes = []
+    tr_boxes = []
     for img in tr_binarys:
-        boxes.append(bbox(img))
-    print boxes
+        tr_boxes.append(bbox(img))
+    #print boxes
+    
+    val_boxes = []
+    for img in val_binarys:
+        val_boxes.append(bbox(img))
 
     tr_imgs_boxed =[]
     for i,img in enumerate(tr_imgs):
-        img = np.split(img, [boxes[i][0], boxes[i][1]])
-        img = np.split(img[1], [boxes[i][2], boxes[i][3]])
-        tr_imgs_boxed.append(img)
+        #img = np.split(img, [boxes[i][0], boxes[i][1]])
+        #img = np.split(img[1], [boxes[i][2], boxes[i][3]])
+        tr_imgs_boxed.append(img[tr_boxes[i][2]:tr_boxes[i][1], tr_boxes[i][0]:tr_boxes[i][3], :])
+        
+    val_imgs_boxed = []
+    for i, img in enumerate(val_imgs):
+        val_imgs_boxed.append(img[val_boxes[i][2]:val_boxes[i][1], val_boxes[i][0]:val_boxes[i][3], :])
 
-    plt.pyplot.imshow(tr_imgs_boxed[0])
-    #show_imgs_hsv(tr_imgs_boxed, 3, 4)
+    #plt.pyplot.imshow(tr_imgs_boxed[0])
+    show_imgs_rgb(tr_imgs_boxed, 3, 13)
     return 'bounding boxes not working'
 
 
@@ -194,5 +205,5 @@ if __name__ == '__main__':
     #print compare_3dhists()
     #print compare_correct(compare_3dhists()), 'Labels were chosen correct'
     #print create_seperator()
-    #show_imgs_hsv(binarize()[1], 3, 4)
+    #show_imgs_rgb(binarize_otsu()[1], 3, 4)
     create_bounding_boxes()
