@@ -7,7 +7,7 @@ Created on Thu Apr 26 16:24:44 2018
 
 import numpy as np
 import matplotlib as plt
-from skimage.io import imread
+from skimage.io import imread, imshow
 import glob
 from skimage.filters import threshold_otsu
 import itertools 
@@ -140,7 +140,6 @@ def convert_to_hsv():
     return val_imgs_hsv, tr_imgs_hsv
 
 
-#
 def binarize():    
     val_imgs_greys = list(itertools.starmap(np.dot, [(img, [0.299, 0.587, 0.114]) for img in val_imgs]))
     tr_imgs_greys = list(itertools.starmap(np.dot, [(img, [0.299, 0.587, 0.114]) for img in tr_imgs]))
@@ -196,28 +195,105 @@ def create_bounding_boxes(method = 'fixed'):
 
     return val_imgs_boxed, tr_imgs_boxed
 
+#Sollte funktionieren, aber bei hamburg2.png dauert es bei mir so lange, dass ich kein
+#Ergebnis bekomme (bei paar minuten warten)
+def regiongrowing():
+    img = imread('./hamburg2.png')
+    img = img[:,:,0]*0.33+img[:,:,1]*0.33+img[:,:,2]*0.33
+    queue = []
+    value = img[0,0]
+    print value
+    binarized = np.ones(img.shape)
+    binarized = binarized*255
+    binarized[0,0] = 0
+    queue.append((0,0))
+    finished = []
+    while len(queue) > 0:
+        px = queue[0]
+        binarized[px[0], px[1]] = 0
+        for pos in neighbors(px[0], px[1], img.shape):
+            if img[pos[0], pos[1]] == value:
+                binarized[pos[0], pos[1]] = 0
+                if not pos in finished:
+                    queue.append(pos)
+                finished.append(pos)
+        queue.pop(0)
+        #imshow('progress', binarized)
+        #print binarized
+        
+        #raw_input('press enter')
+    return binarized
+                
+#geklaute Funktion!
+def neighbors(x, y, shape):
+    out = []
+    maxx = shape[1]-1
+    maxy = shape[0]-1
+
+    #top left
+    outx = min(max(x-1,0),maxx)
+    outy = min(max(y-1,0),maxy)
+    out.append((outx,outy))
+
+    #top center
+    outx = x
+    outy = min(max(y-1,0),maxy)
+    out.append((outx,outy))
+
+    #top right
+    outx = min(max(x+1,0),maxx)
+    outy = min(max(y-1,0),maxy)
+    out.append((outx,outy))
+
+    #left
+    outx = min(max(x-1,0),maxx)
+    outy = y
+    out.append((outx,outy))
+
+    #right
+    outx = min(max(x+1,0),maxx)
+    outy = y
+    out.append((outx,outy))
+
+    #bottom left
+    outx = min(max(x-1,0),maxx)
+    outy = min(max(y+1,0),maxy)
+    out.append((outx,outy))
+
+    #bottom center
+    outx = x
+    outy = min(max(y+1,0),maxy)
+    out.append((outx,outy))
+
+    #bottom right
+    outx = min(max(x+1,0),maxx)
+    outy = min(max(y+1,0),maxy)
+    out.append((outx,outy))
+
+    return out    
+
 
 if __name__ == '__main__':
-    load_imgs()
+    #load_imgs()
     
-    print 'Classification with entire image:\n'
-    print val_labels
-    print compare_means(val_imgs, tr_imgs)
-    print compare_correct(compare_means(val_imgs, tr_imgs)), 'Labels were chosen correctly (Descriptor: mean)'
-    print compare_3dhists(val_imgs, tr_imgs)
-    print compare_correct(compare_3dhists(val_imgs, tr_imgs)), 'Labels were chosen correctly (Descriptor: 3DHist)'
-    print create_seperator()
+    #print 'Classification with entire image:\n'
+    #print val_labels
+    #print compare_means(val_imgs, tr_imgs)
+    #print compare_correct(compare_means(val_imgs, tr_imgs)), 'Labels were chosen correctly (Descriptor: mean)'
+    #print compare_3dhists(val_imgs, tr_imgs)
+    #print compare_correct(compare_3dhists(val_imgs, tr_imgs)), 'Labels were chosen correctly (Descriptor: 3DHist)'
+    #print create_seperator()
     
-    print 'Classification with bounding boxes:\n'
-    print val_labels
-    imgs_boxed = create_bounding_boxes()
-    val_imgs_boxed = imgs_boxed[0]
-    tr_imgs_boxed = imgs_boxed[1]
-    print compare_means(val_imgs_boxed, tr_imgs_boxed)
-    print compare_correct(compare_means(val_imgs_boxed, tr_imgs_boxed)), 'Labels were chosen correctly (Descriptor: mean)'
-    print compare_3dhists(val_imgs_boxed, tr_imgs_boxed)
-    print compare_correct(compare_3dhists(val_imgs_boxed, tr_imgs_boxed)), 'Labels were chosen correctly (Descriptor: 3DHist)'
-    print create_seperator()
+    #print 'Classification with bounding boxes:\n'
+    #print val_labels
+    #imgs_boxed = create_bounding_boxes()
+    #val_imgs_boxed = imgs_boxed[0]
+    #tr_imgs_boxed = imgs_boxed[1]
+    #print compare_means(val_imgs_boxed, tr_imgs_boxed)
+    #print compare_correct(compare_means(val_imgs_boxed, tr_imgs_boxed)), 'Labels were chosen correctly (Descriptor: mean)'
+    #print compare_3dhists(val_imgs_boxed, tr_imgs_boxed)
+    #print compare_correct(compare_3dhists(val_imgs_boxed, tr_imgs_boxed)), 'Labels were chosen correctly (Descriptor: 3DHist)'
+    #print create_seperator()
     
     #Die Ergebnisse beim Klassifizieren mit den Bildausschnitten sind erheblich besser:
     #schon der Mittelwert zeigt eine Verbesserung von ~17% auf ~67% Genauigkeit,
@@ -234,3 +310,4 @@ if __name__ == '__main__':
     
     
     #show_imgs_rgb(create_bounding_boxes('otsu')[1], 3, 13)
+    imshow(regiongrowing())
