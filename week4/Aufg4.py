@@ -10,8 +10,8 @@ import matplotlib as plt
 from skimage.io import imread
 import glob
 from skimage.filters import threshold_otsu
-import itertools
-from skimage.measure import regionprops
+import itertools 
+from skimage.measure import regionprops, label
 
 val_imgs = glob.glob('./haribo1/hariboVal/*.png')
 tr_imgs = glob.glob('./haribo1/hariboTrain/*.png')
@@ -37,8 +37,8 @@ def create_seperator():
 
 def compare_correct(labels):
     count = 0
-    for i,label in enumerate(labels):
-        if val_labels[i] == label:
+    for i, pred_label in enumerate(labels):
+        if val_labels[i] == pred_label:
             count += 1
     return count
 
@@ -59,7 +59,7 @@ def show_imgs_hsv(imgs, subplot_x, subplot_y):
             if(imgs[i] is None):
                 break
             else:
-                ax[i, j].imshow(plt.colors.hsv_to_rgb(imgs[i+j]), 'Greys_r')
+                ax[i, j].imshow(plt.colors.hsv_to_rgb(imgs[(i*subplot_y)+j]), 'Greys_r')
     plt.pyplot.show(block=True)
 
 
@@ -71,29 +71,30 @@ def show_imgs_rgb(imgs, subplot_x, subplot_y):
             if(imgs[i] is None):
                 break
             else:
-                ax[i, j].imshow(imgs[i+j], 'Greys_r')
+                ax[i, j].imshow(imgs[(i*subplot_y)+j], 'Greys_r')
     plt.pyplot.show(block=True)
 
 
 def bbox(img):
-    #rows = np.any(img, axis=1)
-    #cols = np.any(img, axis=0)
-    #rmin, rmax = np.where(rows)[0][[0, -1]]
-    #cmin, cmax = np.where(cols)[0][[0, -1]]
-    #return rmin, rmax, cmin, cmax
     img = img.astype(np.int)
     props = regionprops(img)[0]
-    return props.bbox
+    return props.bbox #xMin, yMin, xMax, yMax -> index as (0,2),(1,3)
 
 # task functions
-def classify_means():
-    val_means = np.mean(np.array(val_imgs), axis=(1,2))
-    tr_means = np.mean(np.array(tr_imgs), axis=(1,2))
-    return val_means, tr_means
+def classify_means(val, tr):
+    val_means = []
+    tr_means = []
     
+    for img in val:
+        val_means.append(np.mean(img, axis = (0,1)))
+        
+    for img in tr:
+        tr_means.append(np.mean(img, axis = (0,1)))
+    
+    return val_means, tr_means
 
-def compare_means():
-    means = classify_means()
+def compare_means(val, tr):
+    means = classify_means(val, tr)
     val_means = means[0]
     tr_means = means[1]
     labels = []
@@ -106,20 +107,20 @@ def compare_means():
     return labels
     
     
-def classify_3dhists():
+def classify_3dhists(val, tr):
     val_hists = []
     tr_hists = []
-    for img in val_imgs:
+    for img in val:
         img = img.reshape((img.shape[0]*img.shape[1],3))
         val_hists.append(np.histogramdd(img, bins = [8,8,8], range=((0,256),(0,256),(0,256)))[0])
-    for img in tr_imgs:
+    for img in tr:
         img = img.reshape((img.shape[0]*img.shape[1],3))
         tr_hists.append(np.histogramdd(img, bins = [8,8,8], range=((0,256),(0,256),(0,256)))[0])
     return val_hists, tr_hists
 
 
-def compare_3dhists():
-    hists = classify_3dhists()
+def compare_3dhists(val, tr):
+    hists = classify_3dhists(val, tr)
     val_hists = hists[0]
     tr_hists = hists[1]
     labels = []
@@ -139,13 +140,13 @@ def convert_to_hsv():
     return val_imgs_hsv, tr_imgs_hsv
 
 
-def binarize():
-    imgs_hsv = convert_to_hsv()
-    val_imgs_hsv = imgs_hsv[0]
-    tr_imgs_hsv = imgs_hsv[1]
+#
+def binarize():    
+    val_imgs_greys = list(itertools.starmap(np.dot, [(img, [0.299, 0.587, 0.114]) for img in val_imgs]))
+    tr_imgs_greys = list(itertools.starmap(np.dot, [(img, [0.299, 0.587, 0.114]) for img in tr_imgs]))
 
-    val_binary = list(itertools.starmap(to_binary_hsv, [(img, 30, 140) for img in val_imgs_hsv]))
-    tr_binary = list(itertools.starmap(to_binary_hsv, [(img, 30, 140) for img in tr_imgs_hsv]))
+    val_binary = list(itertools.starmap(to_binary_hsv, [(img, 30, 110) for img in val_imgs_greys]))
+    tr_binary = list(itertools.starmap(to_binary_hsv, [(img, 30, 110) for img in tr_imgs_greys]))
     val_binary = [255*img for img in val_binary]
     tr_binary = [255*img for img in tr_binary]
 
@@ -168,15 +169,18 @@ def binarize_otsu():
     return val_binary_otsu, tr_binary_otsu
 
 
-def create_bounding_boxes():
-    binarys = binarize()
+def create_bounding_boxes(method = 'fixed'):
+    if method == 'fixed':
+        binarys = binarize()
+    else: 
+        binarys = binarize_otsu()
+        
     val_binarys = binarys[0]
     tr_binarys = binarys[1]
 
     tr_boxes = []
     for img in tr_binarys:
         tr_boxes.append(bbox(img))
-    #print boxes
     
     val_boxes = []
     for img in val_binarys:
@@ -184,26 +188,49 @@ def create_bounding_boxes():
 
     tr_imgs_boxed =[]
     for i,img in enumerate(tr_imgs):
-        #img = np.split(img, [boxes[i][0], boxes[i][1]])
-        #img = np.split(img[1], [boxes[i][2], boxes[i][3]])
-        tr_imgs_boxed.append(img[tr_boxes[i][2]:tr_boxes[i][1], tr_boxes[i][0]:tr_boxes[i][3], :])
+        tr_imgs_boxed.append(img[tr_boxes[i][0]:tr_boxes[i][2], tr_boxes[i][1]:tr_boxes[i][3], :])
         
     val_imgs_boxed = []
     for i, img in enumerate(val_imgs):
-        val_imgs_boxed.append(img[val_boxes[i][2]:val_boxes[i][1], val_boxes[i][0]:val_boxes[i][3], :])
+        val_imgs_boxed.append(img[val_boxes[i][0]:val_boxes[i][2], val_boxes[i][1]:val_boxes[i][3], :])
 
-    #plt.pyplot.imshow(tr_imgs_boxed[0])
-    show_imgs_rgb(tr_imgs_boxed, 3, 13)
-    return 'bounding boxes not working'
+    return val_imgs_boxed, tr_imgs_boxed
 
 
 if __name__ == '__main__':
     load_imgs()
-    #print val_labels
-    #print compare_means()
-    #print compare_correct(compare_means()), 'Labels were chosen correct'
-    #print compare_3dhists()
-    #print compare_correct(compare_3dhists()), 'Labels were chosen correct'
-    #print create_seperator()
-    #show_imgs_rgb(binarize_otsu()[1], 3, 4)
-    create_bounding_boxes()
+    
+    print 'Classification with entire image:\n'
+    print val_labels
+    print compare_means(val_imgs, tr_imgs)
+    print compare_correct(compare_means(val_imgs, tr_imgs)), 'Labels were chosen correctly (Descriptor: mean)'
+    print compare_3dhists(val_imgs, tr_imgs)
+    print compare_correct(compare_3dhists(val_imgs, tr_imgs)), 'Labels were chosen correctly (Descriptor: 3DHist)'
+    print create_seperator()
+    
+    print 'Classification with bounding boxes:\n'
+    print val_labels
+    imgs_boxed = create_bounding_boxes()
+    val_imgs_boxed = imgs_boxed[0]
+    tr_imgs_boxed = imgs_boxed[1]
+    print compare_means(val_imgs_boxed, tr_imgs_boxed)
+    print compare_correct(compare_means(val_imgs_boxed, tr_imgs_boxed)), 'Labels were chosen correctly (Descriptor: mean)'
+    print compare_3dhists(val_imgs_boxed, tr_imgs_boxed)
+    print compare_correct(compare_3dhists(val_imgs_boxed, tr_imgs_boxed)), 'Labels were chosen correctly (Descriptor: 3DHist)'
+    print create_seperator()
+    
+    #Die Ergebnisse beim Klassifizieren mit den Bildausschnitten sind erheblich besser:
+    #schon der Mittelwert zeigt eine Verbesserung von ~17% auf ~67% Genauigkeit,
+    #was erheblich besser als eine Zufallsauswahl ist. Diese Verbesserung ist auf
+    #die Elimination des Hintergrundes zurueckzufuehren, der den Mittelwert natuerlich
+    #deutlich beeinflusst weil er die groesste Flaeche darstellt.
+    
+    #Bei der Klassifizierung mit 3DHistogrammen ist die Verbesserung noch deutlicher:
+    #von 25% (etwas under dem Zufallswert) auf ~92%! Auch hier werden durch Entfernen des
+    #Hintergrunds die Unterschiede der Bilder mehr hervorgehoben. 
+    #Interessanterweise gab es zwischen dem Otsu-Verfahren und dem manuellen Schwellwert
+    #keinen Unterschied bei der Genauigkeit, obwohl das Otsu-Verfahren bei manchen
+    #Bilder deutlich mehr Hintergrund mit einbezieht.
+    
+    
+    #show_imgs_rgb(create_bounding_boxes('otsu')[1], 3, 13)
