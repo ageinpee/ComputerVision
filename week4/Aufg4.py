@@ -12,6 +12,8 @@ import glob
 from skimage.filters import threshold_otsu
 import itertools 
 from skimage.measure import regionprops, label
+from skimage.morphology import binary_opening, disk, square
+from skimage.transform import resize
 
 val_imgs = glob.glob('./haribo1/hariboVal/*.png')
 tr_imgs = glob.glob('./haribo1/hariboTrain/*.png')
@@ -218,13 +220,9 @@ def regiongrowing():
                     queue.append(pos)
                 finished.append(pos)
         queue.pop(0)
-        #imshow('progress', binarized)
-        #print binarized
         
-        #raw_input('press enter')
     return binarized
                 
-#geklaute Funktion!
 def neighbors(x, y, shape):
     out = []
     maxx = shape[1]-1
@@ -272,6 +270,105 @@ def neighbors(x, y, shape):
 
     return out    
 
+def buchstabenwirrwarr():
+    #read image
+    img = imread('./buchstabenWirrwarr.png')
+    
+    #binarize, perform binary opening
+    binary = to_binary_rgb(img, 255)
+    binary = binary_opening(binary, disk(3))
+    
+    #Man kann am Ergebnis abschaetzen, dass ein Opening durchgefuehrt wurde,
+    #denn durch Opening werden kleine Elemente erst erodiert und dann an groesseren
+    #Objekten die Kanten durch Dilation wiederhergestellt - Die Buchstaben haben
+    #im Ergebnisbild nicht erheblich kleinere Flaeche, wie es bei nur Erosion der
+    #Fall waere.
+    
+    #Label image, get bounding boxes
+    binary_int = binary.astype(np.int)
+    binary_labeled = label(binary_int)
+    props = regionprops(binary_labeled)
+    
+    bboxes = []
+    for region in props:
+        bboxes.append(region.bbox)
+    
+    #get only bboxes of binary image
+    imgs_boxed = []
+    for i in range((len(props))):
+        imgs_boxed.append(binary[bboxes[i][0]:bboxes[i][2], bboxes[i][1]:bboxes[i][3]])
+    
+    #resize to uniform size
+    for i, img in enumerate(imgs_boxed):
+        imgs_boxed[i] = resize(img, (100, 100))
+    
+    #get histograms for validation images
+    val_x_hists = []
+    val_y_hists = []
+    for img in imgs_boxed:
+        val_x_hists.append(histogram_x(img))
+        val_y_hists.append(histogram_y(img))
+    
+    #read training images, get labels from filename
+    tr_letters = glob.glob('./buchstaben/*.png')
+    tr_xy_labels = []
+    for i,img in enumerate(tr_letters):
+        tr_xy_labels.append(get_letter_label(tr_letters[i]))
+        tr_letters[i] = imread(img)
+    
+    #resize to uniform size with val imgs
+    for i, img in enumerate(tr_letters):
+        tr_letters[i] = resize(img, (100, 100))
+        
+    show_imgs_rgb(tr_letters, 4, 5)
+    
+    #get histograms for training images (already binarized in file)
+    tr_x_hists = []
+    tr_y_hists = []
+    for img in tr_letters:
+        tr_x_hists.append(histogram_x(img))
+        tr_y_hists.append(histogram_y(img))
+    
+    #classify images with NN of x adn y hists (projection)
+    print 'Training labels: \n', tr_xy_labels
+    labels = compare_xyhists(np.hstack((val_x_hists, val_y_hists)), np.hstack((tr_x_hists, tr_y_hists)), tr_xy_labels)
+    val_labels = ['D', 'A', 'K', 'C', 'A', 'F', 'Q',
+                 'P', 'L', 'O', 'G', 'W', 'J', 'X', 'M', 'E', 'H', 'U']
+    
+    #verify accuracy
+    count = 0
+    print 'Predicted labels: \n', labels
+    print 'True labels \n', val_labels
+    for i, pred_label in enumerate(labels):
+        if val_labels[i] == pred_label:
+            count += 1
+    print count, '/ 18 labels chosen correctly'
+    
+#helper functions
+def histogram_x(img):
+    x_hist = []
+    for i in img:
+        x_hist.append(sum(i))
+    return x_hist
+    
+def histogram_y(img):
+    y_hist = []
+    for i in np.transpose(img):
+        y_hist.append(sum(i))
+    return y_hist
+
+def compare_xyhists(val, tr, tr_xy_labels):
+    labels = []
+    for count in range(len(val)):
+        dists = []
+        for i in range(len(tr)):
+            dists.append(np.linalg.norm(tr[i] - val[count]))
+        labels.append(tr_xy_labels[np.argmin(dists)])
+
+    return labels
+
+def get_letter_label(path):
+    return path.split('/')[-1].split('.')[0][-2]
 
 if __name__ == '__main__':
     #load_imgs()
@@ -310,4 +407,7 @@ if __name__ == '__main__':
     
     
     #show_imgs_rgb(create_bounding_boxes('otsu')[1], 3, 13)
-    imshow(regiongrowing())
+    
+    #imshow(regiongrowing())
+    
+    buchstabenwirrwarr()
