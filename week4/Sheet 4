@@ -1,0 +1,468 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Fri Apr 27 22:25:18 2018
+
+@author: Huang
+"""
+
+import numpy as np
+from skimage.io import imread, imsave, imshow
+from skimage.filters import threshold_otsu
+from skimage.measure import label, regionprops
+from skimage import transform
+import scipy.ndimage.morphology as morph
+import matplotlib.pyplot as plt
+import glob
+import pdb
+
+
+
+
+''' Aufgabenzettel 4 '''
+''' Aufgabe 1 '''
+
+# 1.1
+
+# Get the label based on the underlying path structure:
+#   './haribo1/haribo1/hariboTrain\\label_number.png'
+def get_label(path):
+    return path.split('\\')[1].split('_')[0]
+
+# Load the training data
+tr_paths = glob.glob('./haribo1/haribo1/hariboTrain/*.png')
+tr_labels = map(get_label, tr_paths)
+
+# Load the evaluation data
+val_paths = glob.glob('./haribo1/haribo1/hariboVal/*.png')
+val_labels = map(get_label, val_paths)
+
+
+
+# 1.2 Compare images with Euclidean distance
+def compare_euclidean(tr_paths, tr_labels, val_paths):
+    difference_array = []
+     
+    tr_means = []    
+    for i in range(len(tr_paths)):
+        tr_means.append(np.mean(imread(tr_paths[i]), axis=(0,1)))
+    
+    val_means = []
+    for j in range(len(val_paths)):
+        val_means.append(np.mean(imread(val_paths[j]), axis=(0,1)))
+        min_difference = 256*3
+        min_index = -1
+        val_mean = val_means[j]
+        
+        for idx, tr_mean in enumerate(tr_means):
+            if(min_difference > np.linalg.norm(val_mean - tr_mean)):
+                min_difference = np.linalg.norm(val_mean - tr_mean)
+                min_index = idx
+        difference_array.append(tr_labels[min_index])
+    return difference_array
+
+euclidean_comparison = compare_euclidean(tr_paths,tr_labels,val_paths)
+
+
+
+
+# 1.3
+# Helper function
+# Euclidean distance as difference between images
+def euclidean_distance_rgb(hist1, hist2):
+    sum = 0
+    for channel in range(len(hist1)):
+        for i in range(0, len(hist1[channel][0])):
+            sum += abs(hist1[channel][0][i] - hist2[channel][0][i])    
+    return sum
+
+
+
+# Compare with histograms and adjustable binsize
+def compare_histograms(tr_paths, val_paths, binsize=512):
+    tr_histograms = []
+    for tr_path in tr_paths:
+        tr_img = imread(tr_path)
+        
+        red = np.histogram(tr_img[:,:,0], bins = binsize, range = (0,binsize))
+        green = np.histogram(tr_img[:,:,1], bins = binsize, range = (0,binsize))
+        blue = np.histogram(tr_img[:,:,2], bins = binsize, range = (0,binsize))    
+        tr_histograms.append([red, green, blue])
+    
+    hist_differences = []    
+    for val_path in val_paths:
+        min_difference = 2**31
+        min_index = -1
+        val_img = imread(val_path)
+        
+        red = np.histogram(val_img[:,:,0], bins = binsize, range = (0,binsize))
+        green = np.histogram(val_img[:,:,1], bins = binsize, range = (0,binsize))
+        blue = np.histogram(val_img[:,:,2], bins = binsize, range = (0,binsize)) 
+        val_hist = [red, green, blue]
+        
+        for idx, tr_hist in enumerate(tr_histograms):
+            if(min_difference > euclidean_distance_rgb(val_hist, tr_hist)):
+                min_difference =  euclidean_distance_rgb(val_hist, tr_hist)
+                min_index = idx
+        hist_differences.append(tr_labels[min_index])  
+    return hist_differences
+
+histogram_comparison = compare_histograms(tr_paths, val_paths)
+
+
+
+
+
+
+# Validation 1.2, 1.3
+
+# a==b
+def equals(a,b):
+    return a==b
+
+# Validation
+def validate(array1, array2, string_message=""):
+    counter = 0
+    truth_array = map(equals, array1, array2)
+    for i in truth_array:
+        if i:
+            counter += 1
+    percentage = counter/float(len(truth_array))
+    print "Validation of accuracy of" + string_message + ":" + str(percentage)
+
+def validate_1():
+    validate(euclidean_comparison, val_labels, " Euclidean distance in RGB ")
+    validate(histogram_comparison, val_labels, " histogram distance in RGB ")
+
+
+
+
+
+
+
+
+''' Aufgabe 2 '''
+# 2.1
+# Binarize image with every value within the threshold being in the foreground
+def binarize(img, channel=0, upper=117):
+    if len(img.shape) == 3:
+        return img[:,:,channel] < upper
+    else:
+
+        return img[:,:] < upper
+    
+# Crop image at borders
+def crop(img, x0, x1, y0, y1):
+    return img[x0:x1, y0:y1]
+
+
+# Create the bounding box of binarized images
+def bounding_box(img):
+    selection = np.where(img)
+    x_min = np.amin(selection[0])
+    x_max = np.amax(selection[0])
+    y_min = np.amin(selection[1])
+    y_max = np.amax(selection[1])
+    return crop(img, x_min, x_max, y_min, y_max)
+
+tr_imgs = map(imread, tr_paths)
+val_imgs = map(imread, val_paths)
+# tr_binarized = map(binarize, tr_imgs)
+# tr_bbs = map(bounding_box, tr_binarized)
+
+
+
+
+# Create the bounding box of color images by temporarily binarizing
+def bounding_box_color(img, upper=117):
+    binarized = binarize(img, upper=upper)
+    selection = np.where(binarized)
+    x_min = np.amin(selection[0])
+    x_max = np.amax(selection[0])
+    y_min = np.amin(selection[1])
+    y_max = np.amax(selection[1])
+    return crop(img, x_min, x_max, y_min, y_max)
+
+# List of cropped pictures (custom threshold=117)
+tr_bbs_color = map(bounding_box_color, tr_imgs)
+val_bbs_color = map(bounding_box_color, val_imgs)
+
+
+
+# Fills in 0's from the right
+def fill_index(index, width):
+    if len(str(index)) <= width:
+        zeros = width - len(str(index))
+        return ''.join(['0'*zeros]) + str(index)
+
+# Save a collection of images 
+def save_collection(imgs, name=""):
+    size = len(imgs)
+    index_span = len(str(size))
+    for i in range(size):
+        img_name = name + str(fill_index(i+1, width=index_span)) + ".png"
+        imsave(img_name, imgs[i])
+    return "Successfully saved " + str(size) + " images with the name \"" + name + "\"!"
+
+
+# save_collection(tr_bbs_color, "Bounding Boxes Training ")
+# save_collection(val_bbs_color, "Bounding Boxes Validation ")
+        
+        
+ 
+       
+# 2.2
+        
+#to grayscale
+def to_grayscale(img):
+    return (img[:,:,0]/3 + img[:,:,1]/3 + img[:,:,2]/3)
+
+# Crop image with bounding box based on Otsu's threshold
+def otsu_bb(img):
+    threshold = threshold_otsu(img)
+    return bounding_box_color(img, upper=threshold)
+
+# List of cropped pictures (Each picture has individual Otsu threshold)
+tr_otsu_bbs_color = map(otsu_bb, tr_imgs)
+val_otsu_bbs_color = map(otsu_bb, val_imgs)
+
+# save_collection(tr_otsu_bbs_color, "Otsu Bounding Boxes Training ")
+# save_collection(val_otsu_bbs_color, "Otsu Bounding Boxes Validation ")
+
+
+
+
+
+
+
+# 2.3
+# Load the customized training data
+tr_paths_bb = glob.glob('./haribo1/haribo1/hariboTrainCustom/*.png')
+tr_labels_bb = tr_labels
+
+# Load the customized evaluation data
+val_paths_bb = glob.glob('./haribo1/haribo1/hariboValCustom/*.png')
+val_labels_bb = val_labels
+
+
+euclidean_comparison_bb = compare_euclidean(tr_paths_bb,tr_labels_bb,val_paths_bb)
+histogram_comparison_bb = compare_histograms(tr_paths_bb, val_paths_bb)
+
+# Validate the customized bounding boxes
+def validate_bb():
+    validate(euclidean_comparison_bb, val_labels, " Euclidean distance in RGB with bounding boxes ")
+    validate(histogram_comparison_bb, val_labels, " histogram distance in RGB with bounding boxes ")
+    
+    
+    
+    
+    
+# Load the Otsu training data
+tr_paths_otsu = glob.glob('./haribo1/haribo1/hariboTrainOtsu/*.png')
+tr_labels_otsu = tr_labels
+
+# Load the Otsu evaluation data
+val_paths_otsu = glob.glob('./haribo1/haribo1/hariboValOtsu/*.png')
+val_labels_otsu = val_labels
+
+
+euclidean_comparison_otsu = compare_euclidean(tr_paths_otsu,tr_labels_otsu,val_paths_otsu)
+histogram_comparison_otsu = compare_histograms(tr_paths_otsu, val_paths_otsu)
+
+# Validate the customized bounding boxes
+def validate_otsu():
+    validate(euclidean_comparison_otsu, val_labels, " Euclidean distance in RGB with Otsu ")
+    validate(histogram_comparison_otsu, val_labels, " histogram distance in RGB with Otsu ")
+
+
+
+
+
+
+validate_1()
+validate_bb()
+validate_otsu()
+''' Da wir nun Teilausschnitte der Bilder ohne den stoerenden/ablenkenden 
+Background haben, haben wir nun nicht mehr unterdurchschnittlich schlechte
+Ergebnisse, sondern koennen uns mit Fokussierung auf die relevanten Teile
+eines Bildes hohe Genauigkeiten in der Klassifikation erzielen '''
+
+
+
+
+
+
+
+''' Aufgabe 3 '''
+# neighbours of a pixel (clockwise)
+def get_neighbours(x,y):
+    return [[x-1,y-1],[x-1,y],[x-1,y+1],
+            [x,y+1],[x+1,y+1],
+            [x+1,y],[x+1,y-1],[x,y-1]]
+    
+
+# Takes the grayscale value (weighted average) of an rgb array
+def grayscale_val(rgb):
+    return (rgb[0]/3 + rgb[1]/3 + rgb[2]/3)
+
+
+# region growing
+def region_growing(img, tolerance=0):
+    
+    # dimensions
+    max_x = img.shape[0]
+    max_y = img.shape[1]
+    
+    output = np.ones((max_x, max_y))
+    output[0,0] = 0
+    
+    to_do = [[0,0]]
+    visited = []
+    
+    # process as long as there is something to process
+    while to_do != []:
+        current_i = to_do[0]
+        current_val = img[current_i[0], current_i[1]]
+        visited.append(current_i)
+        
+        for n in get_neighbours(current_i[0], current_i[1]):
+            if n not in visited:
+                #neighbour is a valid value
+                if (0 <= n[0] < max_x) and (0 <= n[1] < max_y):
+                    n_val = img[n[0],n[1]]
+                    if (abs(int(current_val[0]) - int(n_val[0])) <= tolerance)\
+                    and (abs(int(current_val[1]) - int(n_val[1])) <= tolerance)\
+                    and (abs(int(current_val[2]) - int(n_val[2])) <= tolerance):
+                        output[n[0],n[1]] = 0
+                    if n not in to_do:
+                        to_do.append(n)
+                    
+        to_do.pop(0)
+    
+    return output
+
+
+
+
+
+
+''' Aufgabe 6 '''
+# 1
+image = imread("./buchstabenWirrwarr.png")
+
+
+
+# 2 (default threshold = 117)
+binarized_letters = binarize(image)
+
+
+
+# 3
+standalone = morph.binary_opening(binarized_letters, structure=np.ones((6,6)))
+''' Je nach Operation fuellt closing kleinere Loecher, opening macht kleine Elemente weg
+Ausserdem frisst erosion was weg, wohingegen dilation Unebenheiten auffuelt.'''
+
+
+
+# 4
+labels = label(standalone)
+
+subregions = []
+for r in regionprops(labels):
+    subregions.append(r.bbox)
+
+def crop_bb(bb, img=standalone):
+    return img[bb[0]:bb[2], bb[1]:bb[3]]
+
+sub_images = map(crop_bb, subregions)
+sub_images_fuzzy = []
+for i in range(len(subregions)):
+    sub_images_fuzzy.append(crop_bb(subregions[i], img=binarized_letters))
+    
+# save_collection(sub_images, "Letter ")
+# save_collection(sub_images_fuzzy, "Fuzzy ")
+
+
+
+# 5
+resized_tr = []
+for i in sub_images:
+    resized_tr.append(transform.resize(i, (250,250)))
+
+
+def get_letter_label(path):
+    return path.split('/')[-1].split('.')[0][-2]
+
+# Read letters    
+buchstaben_paths = glob.glob('./buchstaben/*.png')
+buchstaben_labels = map(get_letter_label, buchstaben_paths)
+buchstaben_imgs = map(binarize, map(imread, buchstaben_paths))
+resized_val = []
+
+for j in buchstaben_imgs:
+    resized_val.append(transform.resize(j, (250,250)))
+
+
+# Histograms (index refers to coordinate index)
+def histogram_x(img):
+    x_hist = []
+    for i in img:
+        x_hist.append(sum(i))
+    return x_hist
+    
+def histogram_y(img):
+    y_hist = []
+    for i in np.transpose(img):
+        y_hist.append(sum(i))
+    return y_hist
+
+
+# create histograms
+x_hist_tr = map(histogram_x, resized_tr)
+y_hist_tr = map(histogram_y, resized_tr)
+x_hist_val = map(histogram_x, resized_val)
+y_hist_val = map(histogram_y, resized_val)
+
+
+# mean of unlabelled histogram
+def hist_mean(hist):
+    weighted = zip(hist, range(len(hist)))
+    total = 0
+    data_points = 0
+    for i in weighted:
+        total += i[0]*i[1]
+        data_points += i[0]
+    return (total/data_points)
+
+
+# create histograms
+x_mean_tr = map(hist_mean, x_hist_tr)
+y_mean_tr = map(hist_mean, y_hist_tr)
+x_mean_val = map(hist_mean, x_hist_val)
+y_mean_val = map(hist_mean, y_hist_val)
+
+
+# label the letters
+def label_letters():
+    
+    labels = []    
+    for i in range(len(x_mean_tr)):
+        min_difference = 2**31
+        min_index = -1
+        
+        for j in range(len(x_mean_val)):
+            difference = abs(x_mean_tr[i]-x_mean_val[j])
+            difference += abs(y_mean_tr[i]-y_mean_val[j])
+            
+            if min_difference > difference:
+                min_difference =  difference
+                min_index = j
+        labels.append(buchstaben_labels[min_index])  
+    return labels
+
+
+# validation
+labelled_letters = label_letters()
+actual_labels = ['D', 'A', 'K', 'C', 'A', 'F', 'Q', \
+                 'P', 'Z', 'O', 'G', 'W', 'J', 'X', 'M', 'E', 'H', 'U']
+
+validate(labelled_letters, actual_labels, " Euclidean distance of resized letters using histograms ")
