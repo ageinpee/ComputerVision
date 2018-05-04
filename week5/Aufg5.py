@@ -21,28 +21,25 @@ import time
 from skimage.filters.rank import gradient
 
 
-lenna_noisy = imread('./noisyLenna.png')
-lenna = imread('./Lenna.png')
-
-
-def bad_convolve():
-    out = np.empty(lenna_noisy.shape)
+def bad_convolve(img):
+    out = np.empty(img.shape)
     
-    for x in range(lenna_noisy.shape[0]):
-        for y in range(lenna_noisy.shape[1]):
+    for x in range(img.shape[0]):
+        for y in range(img.shape[1]):
             neighbors = []            
             for i in range(-1, 2):
                 for j in range(-1,2):
-                    if x+i in range(lenna_noisy.shape[0]) and y+j in range(lenna_noisy.shape[1]):
-                        neighbors.append(lenna_noisy[x+i][y+j])
+                    if x+i in range(img.shape[0]) and y+j in range(img.shape[1]):
+                        neighbors.append(img[x+i][y+j])
                     else: neighbors.append(0)
             out[x][y] = np.mean(neighbors)
+
     return out
 
 
-def scipy_convolve(size_x, size_y):
+def scipy_convolve(img, size_x, size_y):
     mask = np.ones((size_x, size_y))*(1/float(size_x*size_y))
-    out = convolve(lenna_noisy, mask)
+    out = convolve(img, mask)
     
     return out
     
@@ -58,20 +55,42 @@ def create_gradients_img(img_x, img_y):
     out = np.hypot(img_x, img_y)
     
     return out
-    
-    
+
+
+def bad_template_matching_map(img, template):
+    out = np.empty(img.shape)
+
+    for x in range(img.shape[0]):
+        for y in range(img.shape[1]):
+            similarities = []
+            for i in range(int((0-template.shape[0])/2.0), int((template.shape[0])/2.0)+1):
+                for j in range(int((0-template.shape[1])/2.0), int((template.shape[1])/2.0)+1):
+                    if x + i in range(img.shape[0]) and y + j in range(img.shape[1]):
+                        similarities.append(int(img[x+i][y+j]-int(template[i][j])))
+                        print x, y
+                    else:
+                        similarities.append(0)
+                        print 'not inside'
+            out[x][y] = np.mean(similarities)
+
+    return out
+
     
 if __name__ == '__main__':
+    lenna_noisy = imread('./noisyLenna.png')
+    lenna = imread('./Lenna.png')
+    templ_auge = imread('./auge.png')
+
     #start = time.time()
-    #imshow(bad_convolve())
+    #imshow(bad_convolve(lenna_noisy))
     #bc = time.time()
     #bc_diff = bc-start
     #print bc_diff
 
-    fig, ax = plt.subplots(4, 2)
+    fig, ax = plt.subplots(5, 2)
 
     start = time.time()
-    ax[0, 0].imshow(scipy_convolve(30, 30), 'Greys_r')
+    ax[0, 0].imshow(scipy_convolve(lenna_noisy, 30, 30), 'Greys_r')
     ax[0, 0].set_title('convolved Lenna.png', size=7)
     sc = time.time()
     sc_diff = sc - start
@@ -98,4 +117,6 @@ if __name__ == '__main__':
     ax[0, 1].imshow(create_gradients_img(sobels[0], sobels[1]))
     ax[0, 1].set_title('gradients of noisyLenna.png after sobel+gaussian', size=7)
 
+    ax[4, 0].imshow(bad_template_matching_map(lenna, templ_auge))
+    ax[4, 0].set_title('template matching')
     plt.show(block=True)
