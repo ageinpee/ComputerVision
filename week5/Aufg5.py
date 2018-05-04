@@ -67,26 +67,35 @@ if __name__ == '__main__':
     #bc = time.time()
     #bc_diff = bc-start
     #print bc_diff
-    
-    start = time.time()
-    imshow(scipy_convolve(30,30))
-    sc = time.time()
-    sc_diff = sc-start
-    print sc_diff
-    
-    sobels = sobeling(lenna)
+
     fig, ax = plt.subplots(4, 2)
-    ax[0, 0].imshow(sobels[0], 'Greys_r')
-    ax[0, 1].imshow(sobels[1], 'Greys_r')
+
+    start = time.time()
+    ax[0, 0].imshow(scipy_convolve(30, 30), 'Greys_r')
+    ax[0, 0].set_title('convolved Lenna.png', size=7)
+    sc = time.time()
+    sc_diff = sc - start
+    print sc_diff
+
+    sobels = sobeling(lenna)
+    ax[1, 0].imshow(sobels[0], 'Greys_r')
+    ax[1, 0].set_title('x-axis sobel-filtering on Lenna.png', size=7)
+    ax[1, 1].imshow(sobels[1], 'Greys_r')
+    ax[1, 1].set_title('y-axis sobel-filtering on Lenna.png', size=7)
     
     sobels = sobeling(lenna_noisy)
-    ax[1, 0].imshow(sobels[0], 'Greys_r')
-    ax[1, 1].imshow(sobels[1], 'Greys_r')
+    ax[2, 0].imshow(sobels[0], 'Greys_r')
+    ax[2, 0].set_title('x-axis sobel-filtering on noisyLenna.png', size=7)
+    ax[2, 1].imshow(sobels[1], 'Greys_r')
+    ax[2, 1].set_title('y-axis sobel-filtering on noisyLenna.png', size=7)
     
     sobels = sobeling(gaussian(lenna_noisy, 5))
-    ax[2, 0].imshow(sobels[0], 'Greys_r')
-    ax[2, 1].imshow(sobels[1], 'Greys_r')
-    
-    ax[3, 0].imshow(create_gradients_img(sobels[0], sobels[1]))
-    
-    
+    ax[3, 0].imshow(sobels[0], 'Greys_r')
+    ax[3, 0].set_title('x-axis sobel+gaussian on noisyLenna.png', size=7)
+    ax[3, 1].imshow(sobels[1], 'Greys_r')
+    ax[3, 1].set_title('y-axis sobel+gaussian on noisyLenna.png', size=7)
+
+    ax[0, 1].imshow(create_gradients_img(sobels[0], sobels[1]))
+    ax[0, 1].set_title('gradients of noisyLenna.png after sobel+gaussian', size=7)
+
+    plt.show(block=True)
