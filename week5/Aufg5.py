@@ -82,11 +82,21 @@ def template_matching(img, template):
 def find_max_template(matched_img):
     return np.unravel_index(np.argmax(matched_img), matched_img.shape)
 
-    
+
+def wheres_wally():
+    wally_matching_map = template_matching(wheres_w, wally)
+    wally_match = find_max_template(wally_matching_map)
+    fig1, ax1 = plt.subplots(1, 1)
+    ax1.imshow(wheres_w)
+    ax1.plot(wally_match[1], wally_match[0], color='red', marker='x', linestyle='dashed', linewidth=2, markersize=12)
+
+
 if __name__ == '__main__':
     lenna_noisy = imread('./noisyLenna.png')
     lenna = imread('./Lenna.png')
     templ_auge = imread('./auge.png')
+    wheres_w = imread('./whereIsWally1.jpg')
+    wally = imread('./wally.png')
 
     #start = time.time()
     #imshow(bad_convolve(lenna_noisy))
@@ -137,5 +147,6 @@ if __name__ == '__main__':
         Bildwerte vorliegt.
     '''
     print 'Die Koordinaten fuer den maximalen Match-Wert lauten: ', max_match
+    wheres_wally()
 
     plt.show(block=True)
