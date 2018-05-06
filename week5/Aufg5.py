@@ -9,11 +9,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 from skimage.io import imread, imshow
 import glob
-from skimage.filters import threshold_otsu, gaussian
-import itertools 
+from skimage.filters import gaussian
 from skimage.measure import regionprops, label
 from skimage.morphology import binary_opening, disk, square
 from skimage.transform import resize
+from skimage.feature import match_template
 from scipy.ndimage.filters import convolve
 from scipy.ndimage import sobel
 from scipy import misc
@@ -72,8 +72,15 @@ def bad_template_matching_map(img, template):
                         similarities.append(0)
                         print 'not inside'
             out[x][y] = np.mean(similarities)
-
     return out
+
+
+def template_matching(img, template):
+    return match_template(img, template)
+
+
+def find_max_template(matched_img):
+    return np.unravel_index(np.argmax(matched_img), matched_img.shape)
 
     
 if __name__ == '__main__':
@@ -107,7 +114,7 @@ if __name__ == '__main__':
     ax[2, 0].set_title('x-axis sobel-filtering on noisyLenna.png', size=7)
     ax[2, 1].imshow(sobels[1], 'Greys_r')
     ax[2, 1].set_title('y-axis sobel-filtering on noisyLenna.png', size=7)
-    
+
     sobels = sobeling(gaussian(lenna_noisy, 5))
     ax[3, 0].imshow(sobels[0], 'Greys_r')
     ax[3, 0].set_title('x-axis sobel+gaussian on noisyLenna.png', size=7)
@@ -117,6 +124,18 @@ if __name__ == '__main__':
     ax[0, 1].imshow(create_gradients_img(sobels[0], sobels[1]))
     ax[0, 1].set_title('gradients of noisyLenna.png after sobel+gaussian', size=7)
 
-    ax[4, 0].imshow(bad_template_matching_map(lenna, templ_auge))
-    ax[4, 0].set_title('template matching')
+    templ_match = template_matching(lenna, templ_auge)
+    ax[4, 0].imshow(templ_match)
+    ax[4, 0].set_title('implemented template matching', size=7)
+    max_match = find_max_template(template_matching(lenna, templ_auge))
+    ax[4, 1].imshow(templ_match)
+    ax[4, 1].plot(max_match[1], max_match[0], 'rx')
+    ax[4, 1].set_title('maximal template match coordinates', size=7)
+    '''
+        Aufg. 5.2: Gefunden wird nur das rechte Auge. Gefunden ist auch relativ. 
+        Genau genommen wird nur der Pixel gefunden, bei der die geringste Differnz der
+        Bildwerte vorliegt.
+    '''
+    print 'Die Koordinaten fuer den maximalen Match-Wert lauten: ', max_match
+
     plt.show(block=True)
