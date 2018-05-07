@@ -19,6 +19,7 @@ from scipy.ndimage import sobel
 from scipy import misc
 import time
 from skimage.filters.rank import gradient
+from multiprocessing import Process
 
 
 def bad_convolve(img):
@@ -73,6 +74,38 @@ def bad_template_matching_map(img, template):
                         print 'not inside'
             out[x][y] = np.mean(similarities)
     return out
+
+
+def divide_pixels(img):
+    out = ([], [], [], [])
+    for i in range(img.shape[0]):
+        out[i % 4].append(i)
+    return out
+
+
+def bad_templmatch_multp(img, indices, template):
+    out = np.empty(img.shape)
+
+    for x in indices:
+        for y in range(img.shape[1]):
+            similarities = []
+            for i in range(int((0-template.shape[0])/2.0), int((template.shape[0])/2.0)+1):
+                for j in range(int((0-template.shape[1])/2.0), int((template.shape[1])/2.0)+1):
+                    if x + i in range(img.shape[0]) and y + j in range(img.shape[1]):
+                        similarities.append(int(img[x+i][y+j]-int(template[i][j])))
+                    else:
+                        similarities.append(0)
+            print x
+            out[x][y] = np.mean(similarities)
+
+    if indices[0] == 0:
+        ax2[0,0].imshow(out)
+    elif indices[0] == 1:
+        ax2[0,1].imshow(out)
+    elif indices[0] == 2:
+        ax2[1,0].imshow(out)
+    elif indices[0] == 3:
+        ax2[1,1].imshow(out)
 
 
 def template_matching(img, template):
@@ -147,6 +180,28 @@ if __name__ == '__main__':
         Bildwerte vorliegt.
     '''
     print 'Die Koordinaten fuer den maximalen Match-Wert lauten: ', max_match
-    wheres_wally()
+    #wheres_wally()
 
     plt.show(block=True)
+
+    '''
+    this section is our own template_matching algorithm implemented with 4 cores to speed
+    up the process. We do not recommend to execute it since it still takes forever.
+    '''
+    #fig2, ax2 = plt.subplots(2, 3)
+    #
+    #sections = divide_pixels(lenna)
+    #p0 = Process(target=bad_templmatch_multp, args=(lenna, sections[0], templ_auge))
+    #p1 = Process(target=bad_templmatch_multp, args=(lenna, sections[1], templ_auge))
+    #p2 = Process(target=bad_templmatch_multp, args=(lenna, sections[2], templ_auge))
+    #p3 = Process(target=bad_templmatch_multp, args=(lenna, sections[3], templ_auge))
+    #p0.start()
+    #p1.start()
+    #p2.start()
+    #p3.start()
+    #p0.join()
+    #p1.join()
+    #p2.join()
+    #p3.join()
+    #
+    #plt.show(block=True)
