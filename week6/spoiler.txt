@@ -1,0 +1,6 @@
+Aufgabe 1:
+Ergebnis mit fest gesetzten Werten für w1, w2 und b ohne Training: 0.03 
+Ergebnis mit fest gesetzten Werten für w1, w2 und b mit Training, eine Epoche: 0.91
+
+Aufgabe 3:
+Ergebnis mit Nächster-Nachbar-Klassifikator und MW+STD als Deskriptor auf CIFAR-10: 23.56%
