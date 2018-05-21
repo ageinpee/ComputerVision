@@ -22,27 +22,19 @@ from skimage.filters.rank import gradient
 from multiprocessing import Process
 import bilderGenerator as bG
 
+
 def generate_images():
-    tr = bG.zieheBilder(500)
-    val = bG.zieheBilder(50)
-    return tr, val
-    
+    training = bG.zieheBilder(500)
+    validation = bG.zieheBilder(50)
+    return training, validation
+
 
 def plot_imgs(imgs):
     plt.close('all')
     
-    plus = np.where(imgs[0][2]==1, imgs[0], 0)
-    minus = np.where(imgs[0][2]==-1, imgs[0], 0)
+    plus = np.where(imgs[0][2] == 1, imgs[0], 0)
+    minus = np.where(imgs[0][2] == -1, imgs[0], 0)
     fig, ax = plt.subplots(1,1)
-    
-    '''
-    plus_ind = []
-    minus_ind= []  
-    for i in range(plus.len):
-        plus_ind.append([plus[0][i], plus[1][i]])
-    for i in range(minus.len):
-        minus_ind.append([minus[0][i], minus[1][i]])
-    '''
     
     ax.plot(plus[0], plus[1], 'rx')
     ax.plot(minus[0], minus[1], 'bx')
@@ -71,6 +63,28 @@ def train_neuron(imgs, w1=0.0001, w2=-0.0002, b=0.0001, epochs=1):
     return w1, w2, b
 
 
+def plot_border(imgs, twx):     # twx = trained weights X
+    plt.close('all')
+
+    plus = np.where(imgs[0][2] == 1, imgs[0], 0)
+    minus = np.where(imgs[0][2] == -1, imgs[0], 0)
+    fig, ax = plt.subplots(1,1)
+
+    ax.plot(plus[0], plus[1], 'rx')
+    ax.plot(minus[0], minus[1], 'bx')
+
+    for x in range(2550):
+        for y in range(1280):
+            value = (twx[0] * x + twx[1] * y + twx[2])
+            if (-0.0001) < value < 0.0001:
+                ax.plot(x*0.1, y*0.1, 'g.')
+    '''
+    Anmerkung der Redaktion:
+    WTF!!!! HIER WIRD DER GESAMTE SUCHRAUM ABGEGANGEN! DAS IST EIN GRAUß!!!
+    Anmerkung Ende.
+    '''
+
+
 if __name__ == '__main__':
     images = generate_images()
     tr, val = generate_images()
@@ -78,7 +92,7 @@ if __name__ == '__main__':
     plt.show(block=True)
     print 'linear classification of training images: ', linear_class(tr)
     print 'linear classification of validation images: ', linear_class(val)
-    tw = train_neuron(tr)   #tw = trained weights
+    tw = train_neuron(tr)   # tw = trained weights
     print 'linear classification of validation images with trained weights: ', \
         linear_class(val, tw[0], tw[1], tw[2])
     tw2 = train_neuron(tr, np.random.normal(0, 0.001), np.random.normal(0, 0.001), 0)
@@ -87,3 +101,5 @@ if __name__ == '__main__':
     tw3 = train_neuron(tr, np.random.normal(0, 0.001), np.random.normal(0, 0.001), 0, 100)
     print 'linear classification of validation images with trained weights over 100 epochs: ', \
         linear_class(val, tw3[0], tw3[1], tw3[2])
+    plot_border(images, tw3)
+    plt.show(block=True)
