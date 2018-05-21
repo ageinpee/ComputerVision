@@ -2,7 +2,7 @@
 """
 Created on Thu May  3 16:05:44 2018
 
-@author: 6peters
+@author: Moritz Lahann(6948050), Henrik Peters(6945965), Michael Huang(6947879)
 """
 
 import numpy as np
@@ -180,7 +180,7 @@ if __name__ == '__main__':
         Bildwerte vorliegt.
     '''
     print 'Die Koordinaten fuer den maximalen Match-Wert lauten: ', max_match
-    #wheres_wally()
+    wheres_wally()
 
     plt.show(block=True)
 
