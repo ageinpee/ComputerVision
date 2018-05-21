@@ -48,30 +48,27 @@ def plot_imgs(imgs):
     ax.plot(minus[0], minus[1], 'bx')
     
     
-def linear_class(tr, val):
-    y_tr = []
-    y_val = []
-    for i, img in enumerate(tr):
-        y_tr.append(np.sign(tr[2][i]) == np.sign(0.0001*img[0]+(-0.0002)*img[1]+0.001))
-    for j, img in enumerate(val):
-        y_val.append(np.sign(val[2][j]) == np.sign(0.0001*img[0]+(-0.0002)*img[1]+0.001))
-    
-    return np.sum(y_tr)/float(len(y_tr)), np.sum(y_val)/float(len(y_val))
+def linear_class(imgs, w1=0.0001, w2=(-0.0002), b=0.001):
+    estim = []  #list of all answer estimations.
+    for i in range(len(imgs[0])):
+        estim.append(np.sign(imgs[2][i]) == np.sign(w1 * imgs[0][i] + w2 * imgs[1][i] + b))
+
+    return np.sum(estim)/float(len(estim))
 
 
 def train_neuron(imgs, w1=0.0001, w2=-0.0002, b=0.0001, epochs=1):
     alpha = 0.0000005
-    t = 1
     for epoch in range(epochs):
-        for i,img in enumerate(imgs):
-            if np.sign(img[2][i]) == np.sign(w1*img[0]+w2*img[1]+b):
-                print "correct solution"
-            else:
-                t = (w1*img[0]+w2*img[1]+b)
-                print t
-                w1 = w1 - alpha * (2*(w1*img[0]+w2*img[1]+b-t)*img[0])
-                w2 = w2 - alpha * (2*(w1*img[0]+w2*img[1]+b-t)*img[1])
-                b = b - alpha * (2*(w1*img[0]+w2*img[1]+b-t))
+        for i in range(len(imgs[0])):
+            x1 = imgs[0][i]
+            x2 = imgs[1][i]
+            lab = imgs[2][i]
+            if not (np.sign(lab) == np.sign(w1 * x1 + w2 * x2 + b)):
+                t = lab
+                w1 = w1 - alpha * (2 * (w1 * x1 + w2 * x2 + b - t) * x1)
+                w2 = w2 - alpha * (2 * (w1 * x1 + w2 * x2 + b - t) * x2)
+                b = b - alpha * (2 * (w1 * x1 + w2 * x2 + b - t))
+    return w1, w2, b
 
 
 if __name__ == '__main__':
@@ -79,6 +76,14 @@ if __name__ == '__main__':
     tr, val = generate_images()
     plot_imgs(images)
     plt.show(block=True)
-    print linear_class(tr, val)
-    train_neuron(tr)
-
+    print 'linear classification of training images: ', linear_class(tr)
+    print 'linear classification of validation images: ', linear_class(val)
+    tw = train_neuron(tr)   #tw = trained weights
+    print 'linear classification of validation images with trained weights: ', \
+        linear_class(val, tw[0], tw[1], tw[2])
+    tw2 = train_neuron(tr, np.random.normal(0, 0.001), np.random.normal(0, 0.001), 0)
+    print 'linear classification of validation images with trained weights but modified starting values: ', \
+        linear_class(val, tw2[0], tw2[1], tw2[2])
+    tw3 = train_neuron(tr, np.random.normal(0, 0.001), np.random.normal(0, 0.001), 0, 100)
+    print 'linear classification of validation images with trained weights over 100 epochs: ', \
+        linear_class(val, tw3[0], tw3[1], tw3[2])
