@@ -22,6 +22,14 @@ from skimage.filters.rank import gradient
 from multiprocessing import Process
 import bilderGenerator as bG
 
+np.random.seed(123)
+from tensorflow import set_random_seed
+set_random_seed(123)
+from keras.models import Sequential
+from keras.layers import Dense
+from keras.utils import np_utils
+from keras.optimizers import SGD
+
 
 def generate_images():
     training = bG.zieheBilder(500)
@@ -84,8 +92,70 @@ def plot_border(imgs, twx):     # twx = trained weights X
     Anmerkung Ende.
     '''
 
+def get_merkmale(imgs, merkmale):
+    
+    for i in range(imgs.shape[0]):
+        merkmale[i][0] = np.mean(imgs[i], axis=(0,1))[0]
+        merkmale[i][1] = np.mean(imgs[i], axis=(0,1))[1]
+        merkmale[i][2] = np.mean(imgs[i], axis=(0,1))[2]
+        
+        merkmale[i][3] = np.std(imgs[i], axis=(0,1))[0]
+        merkmale[i][4] = np.std(imgs[i], axis=(0,1))[1]
+        merkmale[i][5] = np.std(imgs[i], axis=(0,1))[2]
+    
+    merkmale = merkmale.astype(np.float32)
+        
+
+def transform_labels(labels):
+    for i in range(labels.shape[0]):
+        if labels[i] == 1:
+            labels[i] = 0
+        if labels[i] == 4:
+            labels[i] = 1
+        if labels[i] == 8:
+            labels[i] = 2
+
+def neural_network():
+    d = np.load('./trainingsDatenFarbe2.npz')
+    tr_imgs = d['data']
+    tr_labels = d['labels']
+
+    d = np.load('./validierungsDatenFarbe2.npz')
+    val_imgs = d['data']
+    val_labels = d['labels']
+    
+    tr_merkmale = np.zeros((60,6))
+    val_merkmale = np.zeros((30,6))
+    
+    get_merkmale(tr_imgs, tr_merkmale)
+    get_merkmale(val_imgs, val_merkmale)
+    
+    transform_labels(val_labels)
+    transform_labels(tr_labels)
+    
+    Y_train = np_utils.to_categorical(tr_labels, 3)
+    Y_test = np_utils.to_categorical(val_labels, 3)
+    
+    model = Sequential()
+    model.add(Dense(8, activation = 'relu', name = 'fc1', input_shape=(6,)))
+    model.add(Dense(8, activation = 'relu', name = 'fc2'))
+    model.add(Dense(3, activation = 'softmax'))
+    model.compile(loss='categorical_crossentropy', 
+                  optimizer=SGD(lr=0.000005, momentum=0.9), 
+                  metrics=['accuracy'])
+    
+    model.fit(tr_merkmale, Y_train, batch_size=1, nb_epoch=500, verbose=1)
+    score = model.evaluate(val_merkmale, Y_test, verbose=1)
+    print(score)
+    
+    '''
+    Die Ergebnisse sind mit 0.63 accuracy etwas besser als die 0.5?
+    mit dem NN-Klassifikator
+    '''
+
 
 if __name__ == '__main__':
+    """
     images = generate_images()
     tr, val = generate_images()
     plot_imgs(images)
@@ -103,3 +173,5 @@ if __name__ == '__main__':
         linear_class(val, tw3[0], tw3[1], tw3[2])
     plot_border(images, tw3)
     plt.show(block=True)
+    """
+    neural_network()
