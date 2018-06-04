@@ -17,11 +17,20 @@ from keras.optimizers import SGD
 (X_train, y_train), (X_test, y_test) = cifar10.load_data() #CIFAR-10 Datensatz laden
 
 X_train = X_train.astype(np.float32)/255
+
+#DATA AUGMENTATION (imgs)
+X_mirrored = np.flip(X_train, 2) #axis should be correct
+X_train = np.concatenate([X_train, X_mirrored], axis=0)
+
 #y_train = y_train.astype(np.float32)/255
 X_test = X_test.astype(np.float32)/255
 #y_test = y_test.astype(np.float32)/255
 
 y_train = keras.utils.to_categorical(y_train, num_classes=10)
+
+#DATA AUGMENTATION (labels)
+y_train = np.concatenate([y_train, y_train], axis=0)
+
 y_val = keras.utils.to_categorical(y_test, num_classes=10)
 
 model = Sequential()
@@ -50,7 +59,7 @@ model.fit(X_train, y_train, batch_size=32, epochs=20,
           callbacks=[keras.callbacks.EarlyStopping(monitor='val_loss', 
                                                   min_delta=0, patience=3), 
                     keras.callbacks.ModelCheckpoint(filepath='./W7.h5', monitor='val_loss', 
-                                                    verbose=0, save_best_only=False, 
+                                                    verbose=0, save_best_only=True, 
                                                     save_weights_only=False, 
                                                     mode='auto', period=1)])
 
@@ -58,4 +67,5 @@ model.load_weights('./W7.h5', by_name=True)
 
 score = model.evaluate(X_test, y_val, verbose=1)
 
-print 'lr=0.0001', score
+print('lr=0.0001')
+print(score)
