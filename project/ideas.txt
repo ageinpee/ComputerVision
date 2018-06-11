@@ -1,0 +1,8 @@
+Ideen fuer Klassifizierung:
+- Bilder-Daten aufeinander legen/stacken
+	--> bildet 3D Projektion
+	--> Beim validieren wird das Bild auf den Stack gelegt und �berpr�ft, wie stark sich die �berschneiden
+- Kantenerkennung
+	--> Kanten/Sobel-Filter etc. anwenden und �berpr�fen wieviele/wie lang die Kanten sind. 
+	--> Nach anwenden des Filters werden die Kanten in Farbe x gef�rbt. Die Anzahl dieser Pixel l�st sich Z�hlen und vergleichen. 
+- 
