@@ -11,18 +11,13 @@ This file is supposed to load the training and evaluation images from the .7z fi
 Imports:
 --------------------------------------------------------------------------
 """
-import numpy as np
-import matplotlib.pyplot as plt
 import imageio
-
 import os
-import zipfile
 
 """
 Helping functions:
 --------------------------------------------------------------------------
 """
-
 
 
 """
@@ -33,23 +28,69 @@ Main functions:
 
 def get_images(file_path):
     files = []
-    tempcount = 0 #<<<<<
-    """
-    with zipfile.ZipFile(file_path, "r") as zf:
-        for filename in zf.namelist():
-            basename,extension = splitext(file)
-            if extension == '.png':
-                print("reading file > " + filename)
-                files.append(imageio.imread("data/Data_Processed.zip/" + filename))
-            tempcount += 1 #<<<<<
-            if tempcount == 20: #<<<<
-                break #<<<<<
-                """
-    print(file_path)
-    zf = zipfile.ZipFile(file_path, 'r')
-    for filename in zf.namelist():
-        basename, extension = os.path.splitext(filename)
-        if extension == '.png':
-            print("reading file > " + filename)
-            files.append(imageio.imread(file_path + "/" + filename))
-    return files #return imageio.mimread(file_path + "/Data_Processed")
+    letters = {"A": [], "B": [], "C": [], "D": [], "E": [], "F": [],
+               "G": [], "H": [], "I": [], "J": [], "K": [], "L": [],
+               "M": [], "N": [], "O": [], "P": [], "Q": [], "R": [],
+               "S": [], "T": [], "U": [], "V": [], "W": [], "X": [],
+               "Y": [], "Z": []}
+    tempcount = 0   # <<<<<<<<<<<<<<<<<<<<<<<<<
+    for filename in os.listdir(file_path):
+        if filename.endswith(".png"):
+            first, second, third = filename.split("_")
+            if second == "65":
+                letters["A"].append(imageio.imread(file_path + "/" + filename))
+            elif second == "66":
+                letters["B"].append(imageio.imread(file_path + "/" + filename))
+            elif second == "67":
+                letters["C"].append(imageio.imread(file_path + "/" + filename))
+            elif second == "68":
+                letters["D"].append(imageio.imread(file_path + "/" + filename))
+            elif second == "69":
+                letters["E"].append(imageio.imread(file_path + "/" + filename))
+            elif second == "70":
+                letters["F"].append(imageio.imread(file_path + "/" + filename))
+            elif second == "71":
+                letters["G"].append(imageio.imread(file_path + "/" + filename))
+            elif second == "72":
+                letters["H"].append(imageio.imread(file_path + "/" + filename))
+            elif second == "73":
+                letters["I"].append(imageio.imread(file_path + "/" + filename))
+            elif second == "74":
+                letters["J"].append(imageio.imread(file_path + "/" + filename))
+            elif second == "75":
+                letters["K"].append(imageio.imread(file_path + "/" + filename))
+            elif second == "76":
+                letters["L"].append(imageio.imread(file_path + "/" + filename))
+            elif second == "77":
+                letters["M"].append(imageio.imread(file_path + "/" + filename))
+            elif second == "78":
+                letters["N"].append(imageio.imread(file_path + "/" + filename))
+            elif second == "79":
+                letters["O"].append(imageio.imread(file_path + "/" + filename))
+            elif second == "80":
+                letters["P"].append(imageio.imread(file_path + "/" + filename))
+            elif second == "81":
+                letters["Q"].append(imageio.imread(file_path + "/" + filename))
+            elif second == "82":
+                letters["R"].append(imageio.imread(file_path + "/" + filename))
+            elif second == "83":
+                letters["S"].append(imageio.imread(file_path + "/" + filename))
+            elif second == "84":
+                letters["T"].append(imageio.imread(file_path + "/" + filename))
+            elif second == "85":
+                letters["U"].append(imageio.imread(file_path + "/" + filename))
+            elif second == "86":
+                letters["V"].append(imageio.imread(file_path + "/" + filename))
+            elif second == "87":
+                letters["W"].append(imageio.imread(file_path + "/" + filename))
+            elif second == "88":
+                letters["X"].append(imageio.imread(file_path + "/" + filename))
+            elif second == "89":
+                letters["Y"].append(imageio.imread(file_path + "/" + filename))
+            elif second == "90":
+                letters["Z"].append(imageio.imread(file_path + "/" + filename))
+
+        tempcount += 1  # <<<<<<<<<<<<<<<<<<<<<<<<<
+        if tempcount == 20:     # <<<<<<<<<<<<<<<<<<<<<<<<<
+            break   # <<<<<<<<<<<<<<<<<<<<<<<<<
+    return letters

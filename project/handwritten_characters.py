@@ -37,14 +37,12 @@ Main functions:
 Main execution
 --------------------------------------------------------------------------
 Notes:
-> image loading is currently restricted to the 20 first images for testing
-    purposes. To load all images, remove the marked lines of code in the
-    image_loader file. 
+> For easy testing only the first 20 images are loaded to have a better
+    runtime during testing. To load all images remove or comment the marked
+    code-lines in the image_loader.py file. 
 --------------------------------------------------------------------------
 """
-
-
 if __name__ == '__main__':
-    images = image_loader.get_images("data/Data_Processed.zip")
-    plt.imshow(images[0])
+    images = image_loader.get_images("data/Data_Processed")
+    plt.imshow(images["A"][0])  # test
     plt.show()
