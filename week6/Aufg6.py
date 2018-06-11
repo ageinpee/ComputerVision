@@ -92,6 +92,7 @@ def plot_border(imgs, twx):     # twx = trained weights X
     Anmerkung Ende.
     '''
 
+
 def get_merkmale(imgs, merkmale):
     
     for i in range(imgs.shape[0]):
@@ -114,6 +115,7 @@ def transform_labels(labels):
             labels[i] = 1
         if labels[i] == 8:
             labels[i] = 2
+
 
 def neural_network():
     d = np.load('./trainingsDatenFarbe2.npz')
