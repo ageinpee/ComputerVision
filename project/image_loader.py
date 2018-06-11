@@ -13,8 +13,10 @@ Imports:
 """
 import numpy as np
 import matplotlib.pyplot as plt
+import imageio
 
-import libarchive
+import os
+import zipfile
 
 """
 Helping functions:
@@ -31,9 +33,23 @@ Main functions:
 
 def get_images(file_path):
     files = []
-    with libarchive.reader(file_path) as reader:
-        for e in reader:
-            # (The entry evaluates to a filename.)
-
-            print("> %s" % (e))
-    return files
+    tempcount = 0 #<<<<<
+    """
+    with zipfile.ZipFile(file_path, "r") as zf:
+        for filename in zf.namelist():
+            basename,extension = splitext(file)
+            if extension == '.png':
+                print("reading file > " + filename)
+                files.append(imageio.imread("data/Data_Processed.zip/" + filename))
+            tempcount += 1 #<<<<<
+            if tempcount == 20: #<<<<
+                break #<<<<<
+                """
+    print(file_path)
+    zf = zipfile.ZipFile(file_path, 'r')
+    for filename in zf.namelist():
+        basename, extension = os.path.splitext(filename)
+        if extension == '.png':
+            print("reading file > " + filename)
+            files.append(imageio.imread(file_path + "/" + filename))
+    return files #return imageio.mimread(file_path + "/Data_Processed")

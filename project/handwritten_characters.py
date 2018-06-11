@@ -6,7 +6,7 @@ Created on Mon June  11 12:48:00 2018
 
 This file is supposed to host the script for a classification problem approach.
     The problem is to classify handwritten letters. For solving the problem different
-    imáge augumentations will be used.
+    image augumentations will be used.
 """
 
 """
@@ -16,7 +16,7 @@ Imports:
 import numpy as np
 import matplotlib.pyplot as plt
 
-
+import image_loader
 
 
 """
@@ -31,3 +31,20 @@ Main functions:
 --------------------------------------------------------------------------
 """
 
+
+
+"""
+Main execution
+--------------------------------------------------------------------------
+Notes:
+> image loading is currently restricted to the 20 first images for testing
+    purposes. To load all images, remove the marked lines of code in the
+    image_loader file. 
+--------------------------------------------------------------------------
+"""
+
+
+if __name__ == '__main__':
+    images = image_loader.get_images("data/Data_Processed.zip")
+    plt.imshow(images[0])
+    plt.show()
