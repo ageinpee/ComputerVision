@@ -21,7 +21,7 @@ Helping functions:
 
 
 # Print iterations progress
-def printProgressBar (iteration, total, prefix = '', suffix = '', decimals = 1, length = 100, fill = '█'):
+def printProgressBar (iteration, total, prefix='', suffix='', decimals=1, length=100, fill='█'):
     """
     Call in a loop to create terminal progress bar
     @params:
@@ -36,7 +36,7 @@ def printProgressBar (iteration, total, prefix = '', suffix = '', decimals = 1, 
     percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
     filled_length = int((length * iteration) / total)
     bar = fill * filled_length + '-' * (length - filled_length)
-    print('\r%s |%s| %s%% %s' % (prefix, bar, percent, suffix), end='\r')
+    print('\r%s |%s| %s%% %s' % (prefix, bar, percent, suffix), end=" ")
     # Print New Line on Complete
     if iteration == total:
         print()
@@ -55,7 +55,7 @@ def get_images(file_path):
                "S": [], "T": [], "U": [], "V": [], "W": [], "X": [],
                "Y": [], "Z": []}
     #tempcount = 0   # <<<<<<<<<<<<<<<<<<<<<<<<<
-    length = len([os.listdir(file_path)])
+    length = len(os.listdir(file_path))
     printProgressBar(0, length, prefix='Progress:', suffix='Complete', length=50)
     for i, filename in enumerate(os.listdir(file_path)):
         if filename.endswith(".png"):
@@ -113,8 +113,7 @@ def get_images(file_path):
             elif second == "90":
                 letters["Z"].append(imageio.imread(file_path + "/" + filename))
 
-        if i % 100 == 0:
-            printProgressBar(i+1, length, prefix='Progress:', suffix='Complete', length=50)
+        printProgressBar(i+1, length, prefix='Progress:', suffix='Complete', length=50)
         #tempcount += 1  # <<<<<<<<<<<<<<<<<<<<<<<<<
         #if tempcount == 20:     # <<<<<<<<<<<<<<<<<<<<<<<<<
          #   break   # <<<<<<<<<<<<<<<<<<<<<<<<<
