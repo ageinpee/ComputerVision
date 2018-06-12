@@ -20,6 +20,27 @@ Helping functions:
 """
 
 
+# Print iterations progress
+def printProgressBar (iteration, total, prefix = '', suffix = '', decimals = 1, length = 100, fill = '█'):
+    """
+    Call in a loop to create terminal progress bar
+    @params:
+        iteration   - Required  : current iteration (Int)
+        total       - Required  : total iterations (Int)
+        prefix      - Optional  : prefix string (Str)
+        suffix      - Optional  : suffix string (Str)
+        decimals    - Optional  : positive number of decimals in percent complete (Int)
+        length      - Optional  : character length of bar (Int)
+        fill        - Optional  : bar fill character (Str)
+    """
+    percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
+    filled_length = int((length * iteration) / total)
+    bar = fill * filled_length + '-' * (length - filled_length)
+    print('\r%s |%s| %s%% %s' % (prefix, bar, percent, suffix), end='\r')
+    # Print New Line on Complete
+    if iteration == total:
+        print()
+
 """
 Main functions:
 --------------------------------------------------------------------------
@@ -33,8 +54,10 @@ def get_images(file_path):
                "M": [], "N": [], "O": [], "P": [], "Q": [], "R": [],
                "S": [], "T": [], "U": [], "V": [], "W": [], "X": [],
                "Y": [], "Z": []}
-    tempcount = 0   # <<<<<<<<<<<<<<<<<<<<<<<<<
-    for filename in os.listdir(file_path):
+    #tempcount = 0   # <<<<<<<<<<<<<<<<<<<<<<<<<
+    length = len([os.listdir(file_path)])
+    printProgressBar(0, length, prefix='Progress:', suffix='Complete', length=50)
+    for i, filename in enumerate(os.listdir(file_path)):
         if filename.endswith(".png"):
             first, second, third = filename.split("_")
             if second == "65":
@@ -90,7 +113,9 @@ def get_images(file_path):
             elif second == "90":
                 letters["Z"].append(imageio.imread(file_path + "/" + filename))
 
-        tempcount += 1  # <<<<<<<<<<<<<<<<<<<<<<<<<
-        if tempcount == 20:     # <<<<<<<<<<<<<<<<<<<<<<<<<
-            break   # <<<<<<<<<<<<<<<<<<<<<<<<<
+        if i % 100 == 0:
+            printProgressBar(i+1, length, prefix='Progress:', suffix='Complete', length=50)
+        #tempcount += 1  # <<<<<<<<<<<<<<<<<<<<<<<<<
+        #if tempcount == 20:     # <<<<<<<<<<<<<<<<<<<<<<<<<
+         #   break   # <<<<<<<<<<<<<<<<<<<<<<<<<
     return letters

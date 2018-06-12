@@ -42,6 +42,7 @@ Notes:
     code-lines in the image_loader.py file. 
 --------------------------------------------------------------------------
 """
+
 if __name__ == '__main__':
     images = image_loader.get_images("data/Data_Processed")
     plt.imshow(images["A"][0])  # test
