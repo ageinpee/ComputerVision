@@ -25,21 +25,14 @@ Helping functions:
 """
 
 
-
 """
 Main functions:
 --------------------------------------------------------------------------
 """
 
 
-
 """
 Main execution
---------------------------------------------------------------------------
-Notes:
-> For easy testing only the first 20 images are loaded to have a better
-    runtime during testing. To load all images remove or comment the marked
-    code-lines in the image_loader.py file. 
 --------------------------------------------------------------------------
 """
 
