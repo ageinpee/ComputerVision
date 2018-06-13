@@ -21,7 +21,7 @@ Helping functions:
 
 
 # Print iterations progress
-def printProgressBar (iteration, total, prefix='', suffix='', decimals=1, length=100, fill='█'):
+def print_progress_bar (iteration, total, prefix='', suffix='', decimals=1, length=100, fill='█'):
     """
     Call in a loop to create terminal progress bar
     @params:
@@ -57,7 +57,7 @@ def get_images(file_path):
                "Y": [], "Z": []}
     #tempcount = 0   # <<<<<<<<<<<<<<<<<<<<<<<<<
     length = len(os.listdir(file_path))
-    printProgressBar(0, length, prefix='Progress:', suffix='Complete', length=50)
+    print_progress_bar(0, length, prefix='Progress:', suffix='Complete', length=50)
     for i, filename in enumerate(os.listdir(file_path)):
         if filename.endswith(".png"):
             first, second, third = filename.split("_")
