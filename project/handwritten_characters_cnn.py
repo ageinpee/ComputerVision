@@ -70,7 +70,7 @@ Main functions:
 if __name__ == '__main__':
     images = image_loader.get_images("data/Data_Processed")
     for key in images:
-        print len(images[key])
+        print(len(images[key]))
     X_train = []
     Y_train = []
     
@@ -108,6 +108,6 @@ if __name__ == '__main__':
 
     score = model.evaluate(X_test, Y_test, verbose=1)    
     
-    print score[1]
+    print(score[1])
     plt.imshow(images["A"][0])  # test
     plt.show()

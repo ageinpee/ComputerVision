@@ -21,7 +21,7 @@ Helping functions:
 
 
 # Print iterations progress
-def print_progress_bar (iteration, total, prefix='', suffix='', decimals=1, length=100, fill='█'):
+def print_progress_bar(iteration, total, prefix='', suffix='', decimals=1, length=100, fill='█'):
     """
     Call in a loop to create terminal progress bar
     @params:
@@ -36,11 +36,11 @@ def print_progress_bar (iteration, total, prefix='', suffix='', decimals=1, leng
     percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
     filled_length = int((length * iteration) / total)
     bar = fill * filled_length + '--' * (length - filled_length)
-    print '\r{0} |{1}| {2} {3}'.format(prefix, bar, percent, suffix),
-    #('\r%s |%s| %s%% %s' % (prefix, bar, percent, suffix), end=" ")
+    print ('\r%s |%s| %s%% %s' % (prefix, bar, percent, suffix), end=" ")
+    # '\r{0} |{1}| {2} {3}'.format(prefix, bar, percent, suffix),
     # Print New Line on Complete
     if iteration == total:
-        print " "
+        print()
 
 
 """

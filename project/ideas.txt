@@ -1,3 +1,6 @@
+Overleaf-Link:
+    https://www.overleaf.com/17047246vrgzjpfwyrxx
+
 Ideen fuer Klassifizierung:
 >>> Notwendig:
     - Binarisieren der Bilder, da durch das reshapen/verkleinern wieder Graustufen im Bild vorhanden sind
