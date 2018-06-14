@@ -2,17 +2,21 @@
 """
 Created on Mon June  11 12:48:00 2018
 
-@author: Moritz Lahann(6948050), Henrik Peters(6945965), Michael Huang(6947879)
+@author: Moritz Lahann(6948050), Henrik Peters(6945965), Michael Huang(6947879), Iman Maiwandi
 
-This file is supposed to load the training and evaluation images from the .7z file
+This file is supposed to handle basic image i/o operations for the project.
+    This includes loading and showing images.
 """
 
 """
 Imports:
 --------------------------------------------------------------------------
 """
-import skimage.io
 import os
+
+import skimage.io
+import matplotlib as plt
+
 
 """
 Helping functions:
@@ -47,6 +51,22 @@ def print_progress_bar(iteration, total, prefix='', suffix='', decimals=1, lengt
 Main functions:
 --------------------------------------------------------------------------
 """
+
+
+def show_images(imgs, subplot_x, subplot_y):
+    fig, ax = plt.pyplot.subplots(subplot_x, subplot_y)
+
+    if len(imgs) > subplot_x * subplot_y:
+        print("WARNING: there are more images than there is space in the plot to show them. "
+              "Therefor only the first", subplot_x*subplot_y, "images are shown.")
+    for i in range(subplot_x):
+        for j in range(subplot_y):
+            if i * j == len(imgs):
+                break
+            else:
+                ax[i, j].set_axis_off()
+                ax[i, j].imshow(imgs[(i*subplot_y)+j], 'Greys_r')
+    plt.pyplot.show(block=True)
 
 
 def get_images(file_path):

@@ -2,7 +2,7 @@
 """
 Created on Mon June  11 12:48:00 2018
 
-@author: Moritz Lahann(6948050), Henrik Peters(6945965), Michael Huang(6947879)
+@author: Moritz Lahann(6948050), Henrik Peters(6945965), Michael Huang(6947879), Iman Maiwandi
 
 This file is supposed to host the script for a convolutional neural network. This cnn
     shall classify handwritten letters.
@@ -13,13 +13,17 @@ This file is supposed to host the script for a convolutional neural network. Thi
 Imports:
 --------------------------------------------------------------------------
 """
+# System:
+import random
+
+# Scientific:
 import numpy as np
 import matplotlib.pyplot as plt
-import random
 
 import keras
 
-import image_loader
+# Local
+import image_ops
 
 
 """
@@ -68,7 +72,7 @@ Main functions:
 """
 
 if __name__ == '__main__':
-    images = image_loader.get_images("data/Data_Processed")
+    images = image_ops.get_images("data/Data_Processed")
     for key in images:
         print(len(images[key]))
     X_train = []
