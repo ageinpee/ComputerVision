@@ -37,7 +37,11 @@ Main execution
 """
 
 if __name__ == '__main__':
-    images = image_ops.get_images("data/Data_Processed")
+    file_path = input("Enter a file path for the data: ")
+    images = image_ops.get_images(file_path)
+
+    for i in images:
+        images[i] = image_ops.augment_images(images[i], 1000)
 
     for key in images:
         print(len(images[key]))

@@ -13,9 +13,12 @@ Imports:
 --------------------------------------------------------------------------
 """
 import os
+import random
 
+import numpy as np
 import skimage.io
 import matplotlib as plt
+import scipy.ndimage.interpolation
 
 
 """
@@ -39,7 +42,7 @@ def print_progress_bar(iteration, total, prefix='', suffix='', decimals=1, lengt
     """
     percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
     filled_length = int((length * iteration) / total)
-    bar = fill * filled_length + '--' * (length - filled_length)
+    bar = fill * filled_length + '-' * (length - filled_length)
     print ('\r%s |%s| %s%% %s' % (prefix, bar, percent, suffix), end=" ")
     # '\r{0} |{1}| {2} {3}'.format(prefix, bar, percent, suffix),
     # Print New Line on Complete
@@ -47,10 +50,46 @@ def print_progress_bar(iteration, total, prefix='', suffix='', decimals=1, lengt
         print()
 
 
+def remove_array(L, arr):
+    ind = 0
+    size = len(L)
+    while ind != size and not np.array_equal(L[ind], arr):
+        ind += 1
+    if ind != size:
+        L.pop(ind)
+    else:
+        raise ValueError('array not found in list.')
+
+
 """
 Main functions:
 --------------------------------------------------------------------------
 """
+
+
+def augment_images(images, wanted_length):
+    out_images = []
+    if len(images) >= wanted_length:
+        print_progress_bar(0, wanted_length, prefix='augmenting images:', suffix='Complete', length=50)
+        if len(images) == wanted_length:
+            print_progress_bar(wanted_length, wanted_length, prefix='augmenting images:', suffix='Complete', length=50)
+            return images
+
+        for i in range(wanted_length):
+            choice = random.choice(images)
+            remove_array(images, choice)
+            out_images.append(choice)
+            print_progress_bar(i, wanted_length, prefix='augmenting images:', suffix='Complete', length=50)
+    else:
+        out_images = images
+        print_progress_bar(0, wanted_length, prefix='augmenting images:', suffix='Complete', length=50)
+        for i in range(wanted_length-len(images)):
+            choice = random.choice(images)
+            choice = scipy.ndimage.interpolation.rotate(choice, float(random.choice([-10, -8.5, -7, -6, -5, -2,
+                                                                                      2, 5, 6, 7, 8.5, 10])))
+            out_images.append(choice)
+            print_progress_bar(0, wanted_length, prefix='augmenting images:', suffix='Complete', length=50)
+    return out_images
 
 
 def show_images(imgs, subplot_x, subplot_y):
@@ -77,7 +116,7 @@ def get_images(file_path):
                "Y": [], "Z": []}
     #tempcount = 0   # <<<<<<<<<<<<<<<<<<<<<<<<<
     length = len(os.listdir(file_path))
-    print_progress_bar(0, length, prefix='Progress:', suffix='Complete', length=50)
+    print_progress_bar(0, length, prefix='loading images:', suffix='Complete', length=50)
     for i, filename in enumerate(os.listdir(file_path)):
         if filename.endswith(".png"):
             first, second, third = filename.split("_")

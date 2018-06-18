@@ -72,7 +72,9 @@ Main functions:
 """
 
 if __name__ == '__main__':
-    images = image_ops.get_images("data/Data_Processed")
+    file_path = input("Enter a file path for the data: ")
+    images = image_ops.get_images(file_path)
+
     for key in images:
         print(len(images[key]))
     X_train = []
