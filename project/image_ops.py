@@ -73,6 +73,7 @@ def augment_images(images, wanted_length, label='unknown'):
         print_progress_bar(0, wanted_length, prefix='augmenting images for label {0}:'.format(label), suffix='Complete', length=50)
         if len(images) == wanted_length:
             print_progress_bar(wanted_length, wanted_length, prefix='augmenting images for label {0}:'.format(label), suffix='Complete', length=50)
+            print('')
             return images
 
         for i in range(wanted_length):
@@ -82,13 +83,14 @@ def augment_images(images, wanted_length, label='unknown'):
             print_progress_bar(i, wanted_length, prefix='augmenting images for label {0}:'.format(label), suffix='Complete', length=50)
     else:
         out_images = images
-        print_progress_bar(0, wanted_length, prefix='augmenting images for label {0}:'.format(label), suffix='Complete', length=50)
+        print_progress_bar(0, wanted_length-len(images), prefix='augmenting images for label {0}:'.format(label), suffix='Complete', length=50)
         for i in range(wanted_length-len(images)):
             choice = random.choice(images)
             choice = scipy.ndimage.interpolation.rotate(choice, float(random.choice([-10, -8.5, -7, -6, -5, -2,
-                                                                                      2, 5, 6, 7, 8.5, 10])))
+                                                                                     2, 5, 6, 7, 8.5, 10])))
             out_images.append(choice)
-            print_progress_bar(0, wanted_length, prefix='augmenting images for label {0}:'.format(label), suffix='Complete', length=50)
+            print_progress_bar(i, wanted_length-len(images), prefix='augmenting images for label {0}:'.format(label), suffix='Complete', length=50)
+    print('')
     return out_images
 
 
@@ -108,7 +110,7 @@ def show_images(imgs, subplot_x, subplot_y):
     plt.pyplot.show(block=True)
 
 
-def get_images(file_path):
+def load_images(file_path):
     letters = {"A": [], "B": [], "C": [], "D": [], "E": [], "F": [],
                "G": [], "H": [], "I": [], "J": [], "K": [], "L": [],
                "M": [], "N": [], "O": [], "P": [], "Q": [], "R": [],
@@ -178,3 +180,20 @@ def get_images(file_path):
         #if tempcount == 20:     # <<<<<<<<<<<<<<<<<<<<<<<<<
          #   break   # <<<<<<<<<<<<<<<<<<<<<<<<<
     return letters
+
+
+def load_images_npz(file_path):
+    letters = {"A": [], "B": [], "C": [], "D": [], "E": [], "F": [],
+               "G": [], "H": [], "I": [], "J": [], "K": [], "L": [],
+               "M": [], "N": [], "O": [], "P": [], "Q": [], "R": [],
+               "S": [], "T": [], "U": [], "V": [], "W": [], "X": [],
+               "Y": [], "Z": []}
+    for i, filename in enumerate(os.listdir(file_path)):
+        if filename.endswith(".npz"):
+            label = filename.split("_")[1].split(".")[0]
+            data = np.load("{0}/{1}".format(file_path, filename))
+            letters[label] = data.f.arr_0
+    return letters
+
+def save_images_npz(file_path, images):
+    np.savez_compressed(file_path, images)

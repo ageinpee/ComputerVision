@@ -30,8 +30,11 @@ import image_ops
 Helping functions:
 --------------------------------------------------------------------------
 """
-def to_binary(img, upper):
-    return (img < upper)
+
+
+def to_binary(img, value):
+    return img < value
+
 
 def compile_cnn(X_train):
     model = keras.Sequential()
@@ -73,7 +76,7 @@ Main functions:
 
 if __name__ == '__main__':
     file_path = input("Enter a file path for the data: ")
-    images = image_ops.get_images(file_path)
+    images = image_ops.load_images(file_path)
 
     for key in images:
         print(len(images[key]))

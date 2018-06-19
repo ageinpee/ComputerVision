@@ -25,6 +25,10 @@ Helping functions:
 """
 
 
+def to_binary(img, value):
+    return img < value
+
+
 """
 Main functions:
 --------------------------------------------------------------------------
@@ -37,13 +41,10 @@ Main execution
 """
 
 if __name__ == '__main__':
-    file_path = input("Enter a file path for the data: ")
-    images = image_ops.get_images(file_path)
+    images = image_ops.load_images_npz(input("Enter a file path for the data: "))
 
     for key in images:
-        images[key] = image_ops.augment_images(images[key], 1000, key)
+        print(key, len(images[key]))
 
-    for key in images:
-        print(len(images[key]))
     image_ops.show_images(images["A"], 20, 20)  #test
     image_ops.show_images(images["B"], 20, 20)  #test
