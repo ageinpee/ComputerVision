@@ -67,28 +67,28 @@ Main functions:
 """
 
 
-def augment_images(images, wanted_length):
+def augment_images(images, wanted_length, label='unknown'):
     out_images = []
     if len(images) >= wanted_length:
-        print_progress_bar(0, wanted_length, prefix='augmenting images:', suffix='Complete', length=50)
+        print_progress_bar(0, wanted_length, prefix='augmenting images for label {0}:'.format(label), suffix='Complete', length=50)
         if len(images) == wanted_length:
-            print_progress_bar(wanted_length, wanted_length, prefix='augmenting images:', suffix='Complete', length=50)
+            print_progress_bar(wanted_length, wanted_length, prefix='augmenting images for label {0}:'.format(label), suffix='Complete', length=50)
             return images
 
         for i in range(wanted_length):
             choice = random.choice(images)
             remove_array(images, choice)
             out_images.append(choice)
-            print_progress_bar(i, wanted_length, prefix='augmenting images:', suffix='Complete', length=50)
+            print_progress_bar(i, wanted_length, prefix='augmenting images for label {0}:'.format(label), suffix='Complete', length=50)
     else:
         out_images = images
-        print_progress_bar(0, wanted_length, prefix='augmenting images:', suffix='Complete', length=50)
+        print_progress_bar(0, wanted_length, prefix='augmenting images for label {0}:'.format(label), suffix='Complete', length=50)
         for i in range(wanted_length-len(images)):
             choice = random.choice(images)
             choice = scipy.ndimage.interpolation.rotate(choice, float(random.choice([-10, -8.5, -7, -6, -5, -2,
                                                                                       2, 5, 6, 7, 8.5, 10])))
             out_images.append(choice)
-            print_progress_bar(0, wanted_length, prefix='augmenting images:', suffix='Complete', length=50)
+            print_progress_bar(0, wanted_length, prefix='augmenting images for label {0}:'.format(label), suffix='Complete', length=50)
     return out_images
 
 

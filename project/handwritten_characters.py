@@ -40,8 +40,8 @@ if __name__ == '__main__':
     file_path = input("Enter a file path for the data: ")
     images = image_ops.get_images(file_path)
 
-    for i in images:
-        images[i] = image_ops.augment_images(images[i], 1000)
+    for key in images:
+        images[key] = image_ops.augment_images(images[key], 1000, key)
 
     for key in images:
         print(len(images[key]))
