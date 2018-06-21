@@ -6,7 +6,7 @@ Created on Mon June  11 12:48:00 2018
 
 This file is supposed to host the script for a classification problem approach.
     The problem is to classify handwritten letters. For solving the problem different
-    image augumentations will be used.
+    image augmentations will be used.
 """
 
 """
@@ -41,14 +41,18 @@ Main execution
 """
 
 if __name__ == '__main__':
-    images = image_ops.load_images_npz(input("Enter a file path for the data: "))
+    images = image_ops.load_images_npz(input("Enter a file path for the npz-data: "))
 
     for key in images:
         print(key, len(images[key]))
 
-    for key in images:
-        images[key] = image_ops.augment_images(images[key], 1000, key)
-        image_ops.save_images_npz("data/Data_Augmented_cShape/Data_" + key, images[key])
+    #for key in images:
+    #    images[key] = image_ops.augment_images(images[key], 1000, key)
+    #    print(key, len(images[key]))
+    #    for img in images[key]:
+    #        print(img.shape)
+    #    image_ops.save_images_npz("data/Data_Augmented_cShape/Data_" + key, images[key])
+
 
     image_ops.show_images(images["A"], 20, 20)  #test
     image_ops.show_images(images["B"], 20, 20)  #test

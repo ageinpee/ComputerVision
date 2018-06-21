@@ -85,15 +85,18 @@ def augment_images(images, wanted_length, label='unknown'):
             out_images.append(choice)
             print_progress_bar(i, wanted_length, prefix='augmenting images for label {0}:'.format(label), suffix='Complete', length=50)
     else:
-        for i in range(images.shape[0]):
-            out_images.append(images[i])
+        if isinstance(images, (np.ndarray, np.generic)):
+            for i in range(images.shape[0]):
+                out_images.append(images[i])
+        else:
+            out_images = images
         print_progress_bar(0, wanted_length-len(images), prefix='augmenting images for label {0}:'.format(label), suffix='Complete', length=50)
         for i in range(wanted_length-len(images)):
             choice = random.choice(images)
             choice = scipy.ndimage.interpolation.rotate(choice, float(random.choice([-10, -8.5, -7, -6, -5, -2,
                                                                                      2, 5, 6, 7, 8.5, 10])), reshape=False)
             out_images.append(choice)
-            print_progress_bar(i, wanted_length-len(images), prefix='augmenting images for label {0}:'.format(label), suffix='Complete', length=50)
+            #print_progress_bar(i, wanted_length-len(images), prefix='augmenting images for label {0}:'.format(label), suffix='Complete', length=50)
     print('')
     return out_images
 
