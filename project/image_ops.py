@@ -2,7 +2,7 @@
 """
 Created on Mon June  11 12:48:00 2018
 
-@author: Moritz Lahann(6948050), Henrik Peters(6945965), Michael Huang(6947879), Iman Maiwandi
+@author: Moritz Lahann(6948050), Henrik Peters(6945965), Michael Huang(6947879), Iman Maiwandi(6989075)
 
 This file is supposed to handle basic image i/o operations for the project.
     This includes loading and showing images.
@@ -51,14 +51,17 @@ def print_progress_bar(iteration, total, prefix='', suffix='', decimals=1, lengt
 
 
 def remove_array(L, arr):
-    ind = 0
-    size = len(L)
-    while ind != size and not np.array_equal(L[ind], arr):
-        ind += 1
-    if ind != size:
-        L.pop(ind)
+    if isinstance(L, (np.ndarray, np.generic)):
+        np.setdiff1d(L, arr)
     else:
-        raise ValueError('array not found in list.')
+        ind = 0
+        size = len(L)
+        while ind != size and not np.array_equal(L[ind], arr):
+            ind += 1
+        if ind != size:
+            L.pop(ind)
+        else:
+            raise ValueError('array not found in list.')
 
 
 """
@@ -82,12 +85,13 @@ def augment_images(images, wanted_length, label='unknown'):
             out_images.append(choice)
             print_progress_bar(i, wanted_length, prefix='augmenting images for label {0}:'.format(label), suffix='Complete', length=50)
     else:
-        out_images = images
+        for i in range(images.shape[0]):
+            out_images.append(images[i])
         print_progress_bar(0, wanted_length-len(images), prefix='augmenting images for label {0}:'.format(label), suffix='Complete', length=50)
         for i in range(wanted_length-len(images)):
             choice = random.choice(images)
             choice = scipy.ndimage.interpolation.rotate(choice, float(random.choice([-10, -8.5, -7, -6, -5, -2,
-                                                                                     2, 5, 6, 7, 8.5, 10])))
+                                                                                     2, 5, 6, 7, 8.5, 10])), reshape=False)
             out_images.append(choice)
             print_progress_bar(i, wanted_length-len(images), prefix='augmenting images for label {0}:'.format(label), suffix='Complete', length=50)
     print('')

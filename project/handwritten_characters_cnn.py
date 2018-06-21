@@ -2,7 +2,7 @@
 """
 Created on Mon June  11 12:48:00 2018
 
-@author: Moritz Lahann(6948050), Henrik Peters(6945965), Michael Huang(6947879), Iman Maiwandi
+@author: Moritz Lahann(6948050), Henrik Peters(6945965), Michael Huang(6947879), Iman Maiwandi(6989075)
 
 This file is supposed to host the script for a convolutional neural network. This cnn
     shall classify handwritten letters.
@@ -75,8 +75,7 @@ Main functions:
 """
 
 if __name__ == '__main__':
-    file_path = input("Enter a file path for the data: ")
-    images = image_ops.load_images(file_path)
+    images = image_ops.load_images_npz(input("Enter a file path for the data: "))
 
     for key in images:
         print(len(images[key]))
@@ -85,29 +84,39 @@ if __name__ == '__main__':
     
     X_test = []
     Y_test = []
-    for key, i in enumerate(images):
-        for j in range(0, trainmin):
-            rnd_img = random.choice(images[key])
-            X_train.append(rnd_img)
-            images[key] = images[key].remove(rnd_img)
-            Y_train.append(i)
-        for j in range(0, testmin):
-            rnd_img = random.choice(images[key])
-            X_test.append(rnd_img)
-            images[key] = images[key].remove(rnd_img)
-            Y_test.append(i)
+    for i, key in enumerate(images):
+        for j in range(0, 800):
+            rnd_index = random.choice(range(0, 800-j))
+            X_train.append(images[key][rnd_index])
+            images[key] = np.delete(images[key], rnd_index)
+            Y_train.append(key)
+        for j in range(0, 200):
+            rnd_index = random.choice(range(0, 200-j))
+            X_test.append(images[key][rnd_index])
+            images[key] = np.delete(images[key], rnd_index)
+            Y_test.append(key)
         
     #binarize images
     for img in X_train:
         to_binary(img, 255)
     for img in X_test:
         to_binary(img, 255)
+        
+    for i in range(len(Y_train)):
+        Y_train[i] = ord(Y_train[i])-65
+    print(Y_train)
+    for i in range(len(Y_test)):
+        Y_test[i] = ord(Y_test[i])-65
+    print(Y_test)
     
     #convert to suitable for CNN
     Y_train = keras.utils.to_categorical(Y_train, 26)
-    X_train = X_train.astype(np.float32)/255
+    for img in X_train:
+        np.reshape(img, (28, 28))
+        print(img.shape)
+    X_train = np.array(X_train)/255
     Y_test = keras.utils.to_categorical(Y_test, 26)
-    X_test = X_test.astype(np.float32)/255
+    X_test = np.array(X_test)/255
     
     #only run for new parameters
     model = compile_cnn(X_train)    
