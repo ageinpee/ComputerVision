@@ -58,7 +58,7 @@ Main functions:
 takes a list of images as input and creates a image stack as described in ideas.txt
 """
 def create_stack(imgs):
-    stack = np.zeros(imgs[0].shape[0], imgs[0].shape[1])
+    stack = np.zeros((28, 28, 4))#imgs[0].shape[0], imgs[0].shape[1], imgs[0].shape[3]))
     for i, img in enumerate(imgs):
         stack = (stack + img)
     stack = stack / len(imgs)
@@ -86,20 +86,40 @@ if __name__ == '__main__':
     #    image_ops.save_images_npz("data/Data_Test/Data_" + key, images[key])
     train = images
     validate = images
+    count = 0
     for key in images:
-        print(key, len(images[key]))
+        image_ops.print_progress_bar(count, 25, prefix='Preparing tr/val-data for {0}'.format(key),
+                                     suffix='Complete', length=50)
         images[key] = to_binary(images[key], 127)*255   # binarization of all images.
         train[key], validate[key] = create_tr_val_data(images[key], 180, 20)   # no parameters = standard of 800/200 tr/val
                                                                       # all tr/val lists are still ordered by label
+        count += 1
 
     for key in train:
         print("train", key, len(train[key]))
         print("validate", key, len(validate[key]))
-    image_ops.show_images(images["A"], 4, 4)  #test
-    image_ops.show_images(images["B"], 4, 4)  #test
+    #image_ops.show_images(images["A"], 4, 4)  #test
+    #image_ops.show_images(images["B"], 4, 4)  #test
 
-    image_ops.show_images(train["A"], 10, 10)  #test
-    image_ops.show_images(validate["A"], 10, 10)  #test
+    #image_ops.show_images(train["A"], 10, 10)  #test
+    #image_ops.show_images(validate["A"], 10, 10)  #test
 
-    image_ops.show_images(train["B"], 4, 4)  #test
-    image_ops.show_images(validate["B"], 4, 4)  #test
+    #image_ops.show_images(train["B"], 4, 4)  #test
+    #image_ops.show_images(validate["B"], 4, 4)  #test
+
+    train_stack = train
+    for i, key in enumerate(train):
+        train_stack[key] = create_stack(train[key])
+        image_ops.print_progress_bar(i, 25, prefix='Creating stack for letter {0}'.format(key),
+                                     suffix='Complete', length=50)
+    stack_means = {"A": [], "B": [], "C": [], "D": [], "E": [], "F": [],
+                   "G": [], "H": [], "I": [], "J": [], "K": [], "L": [],
+                   "M": [], "N": [], "O": [], "P": [], "Q": [], "R": [],
+                   "S": [], "T": [], "U": [], "V": [], "W": [], "X": [],
+                   "Y": [], "Z": []}
+    for i, val_key in enumerate(validate):
+        for j, tr_key in enumerate(train_stack):
+            stack_means[tr_key].append(validate_stack(train_stack[tr_key], validate[val_key]))
+        image_ops.print_progress_bar(i, 25, prefix='Validating letters for {0}'.format(val_key),
+                                     suffix='Complete', length=50)
+    print(stack_means)
