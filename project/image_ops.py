@@ -10,7 +10,7 @@ This file is supposed to handle basic image i/o operations for the project.
 
 """
 Imports:
---------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
 """
 import os
 import random
@@ -23,7 +23,7 @@ import scipy.ndimage.interpolation
 
 """
 Helping functions:
---------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
 """
 
 
@@ -66,7 +66,7 @@ def remove_array(L, arr):
 
 """
 Main functions:
---------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
 """
 
 
@@ -107,16 +107,21 @@ def show_images(imgs, subplot_x, subplot_y):
     if len(imgs) > subplot_x * subplot_y:
         print("WARNING: there are more images than there is space in the plot to show them. "
               "Therefor only the first", subplot_x*subplot_y, "images are shown.")
+    index_count = 0
     for i in range(subplot_x):
         for j in range(subplot_y):
-            if i * j == len(imgs):
+            if index_count == len(imgs):
                 break
             else:
                 ax[i, j].set_axis_off()
                 ax[i, j].imshow(imgs[(i*subplot_y)+j], 'Greys_r')
+            index_count += 1
     plt.pyplot.show(block=True)
 
 
+"""
+loads .png images from a directory and returns them as a dict. Each key holds a list of ndarrays
+"""
 def load_images(file_path):
     letters = {"A": [], "B": [], "C": [], "D": [], "E": [], "F": [],
                "G": [], "H": [], "I": [], "J": [], "K": [], "L": [],
@@ -189,6 +194,9 @@ def load_images(file_path):
     return letters
 
 
+"""
+loads .npz image-arrays from a directory and returns them as a dict. Each key holds a ndarray of ndarrays.
+"""
 def load_images_npz(file_path):
     letters = {"A": [], "B": [], "C": [], "D": [], "E": [], "F": [],
                "G": [], "H": [], "I": [], "J": [], "K": [], "L": [],
@@ -202,5 +210,9 @@ def load_images_npz(file_path):
             letters[label] = data.f.arr_0
     return letters
 
+
+"""
+saves a list of ndarrays as a .npz compressed-numpy-file
+"""
 def save_images_npz(file_path, images):
     np.savez_compressed(file_path, images)

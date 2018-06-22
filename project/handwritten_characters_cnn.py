@@ -111,9 +111,9 @@ if __name__ == '__main__':
     
     #convert to suitable for CNN
     Y_train = keras.utils.to_categorical(Y_train, 26)
-    for img in X_train:
-        np.reshape(img, (28, 28))
-        print(img.shape)
+    #for img in X_train:
+    #    np.reshape(img, (28, 28))
+    #    print(img.shape)
     X_train = np.array(X_train)/255
     Y_test = keras.utils.to_categorical(Y_test, 26)
     X_test = np.array(X_test)/255
