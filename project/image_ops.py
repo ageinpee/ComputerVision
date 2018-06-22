@@ -110,8 +110,8 @@ def show_images(imgs, subplot_x, subplot_y):
     index_count = 0
     for i in range(subplot_x):
         for j in range(subplot_y):
-            if index_count == len(imgs):
-                break
+            if index_count >= len(imgs):
+                ax[i,j].set_axis_off()
             else:
                 ax[i, j].set_axis_off()
                 ax[i, j].imshow(imgs[(i*subplot_y)+j], 'Greys_r')
