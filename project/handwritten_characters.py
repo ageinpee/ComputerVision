@@ -28,8 +28,20 @@ Helping functions:
 
 
 def to_binary(img, value):
-    return img > value
+    return img < value
 
+
+def histogram_x(img):
+    x_hist = []
+    for i in img:
+        x_hist.append(sum(i))
+    return x_hist
+
+def histogram_y(img):
+    y_hist = []
+    for i in np.transpose(img):
+        y_hist.append(sum(i))
+    return y_hist
 
 """
 IMPORTANT NOTE: Input is either a list or ndarray. Output is a tuple of 2 lists of images
@@ -71,7 +83,35 @@ def validate_stack(stack, imgs):
         diff_list.append(np.mean(stack - img))
     return diff_list
 
+def projection(tr_imgs, val_imgs, tr_labels):
+    tr_x_hists = []
+    tr_y_hists = []
+    for img in tr_imgs:
+        tr_x_hists.append(histogram_x(img))
+        tr_y_hists.append(histogram_y(img))
+    
+    print("Training Images converted to x-y-Histogram")
+    
+    val_x_hists = []
+    val_y_hists = []
+    for img in val_imgs:
+        val_x_hists.append(histogram_x(img))
+        val_y_hists.append(histogram_y(img))
+    
+    print("Validation Images converted to x-y-Histogram")
+    
+    return validate_projection(np.hstack((tr_x_hists, tr_y_hists)), np.hstack((val_x_hists, val_y_hists)), tr_labels)
+    
 
+def validate_projection(tr, val, tr_xy_labels):
+    labels = []
+    for count in range(len(val)):
+        dists = []
+        for i in range(len(tr)):
+            dists.append(np.linalg.norm(tr[i] - val[count]))
+        labels.append(tr_xy_labels[np.argmin(dists)])
+
+    return labels    
 """
 Main execution
 ------------------------------------------------------------------------------------------------------------------------
@@ -79,11 +119,13 @@ Main execution
 
 if __name__ == '__main__':
     images = image_ops.load_images_npz(input("Enter a file path for the npz-data: "))
-
+    
     #for key in images:
     #    print(key, len(images[key]))
     #    images[key] = image_ops.augment_images(images[key], 200, key)
     #    image_ops.save_images_npz("data/Data_Test/Data_" + key, images[key])
+    
+    '''
     train = images
     validate = images
     count = 0
@@ -98,6 +140,7 @@ if __name__ == '__main__':
     for key in train:
         print("train", key, len(train[key]))
         print("validate", key, len(validate[key]))
+    
     #image_ops.show_images(images["A"], 4, 4)  #test
     #image_ops.show_images(images["B"], 4, 4)  #test
 
@@ -106,7 +149,8 @@ if __name__ == '__main__':
 
     #image_ops.show_images(train["B"], 4, 4)  #test
     #image_ops.show_images(validate["B"], 4, 4)  #test
-
+    
+    
     train_stack = train
     for i, key in enumerate(train):
         train_stack[key] = create_stack(train[key])
@@ -122,4 +166,53 @@ if __name__ == '__main__':
             stack_means[tr_key].append(validate_stack(train_stack[tr_key], validate[val_key]))
         image_ops.print_progress_bar(i, 25, prefix='Validating letters for {0}'.format(val_key),
                                      suffix='Complete', length=50)
+    
     print(stack_means)
+    '''
+    
+    binarized_images = {}
+    binarized_images.fromkeys(images.keys(), [])
+    train = {}
+    train.fromkeys(images.keys(), [])
+    validate = {}
+    validate.fromkeys(images.keys(), [])
+    
+    for key in images:
+        binarized_images[key] = images[key][:,:,:,0]
+        for i in range(len(binarized_images[key])):
+            binarized_images[key][i] = to_binary(binarized_images[key][i], 127)
+        train[key] = binarized_images[key][0:900]
+        validate[key] = binarized_images[key][900:1000]
+    
+    train_projection = []
+    train_labels = []
+    for key in train:
+        for img in train[key]:
+            train_projection.append(img)
+            train_labels.append(key)
+    
+    val_projection = []
+    val_labels = []
+    for key in validate:
+        for img in validate[key]:
+            val_projection.append(img)
+            val_labels.append(key)
+    
+    guessed_labels = projection(train_projection, val_projection, train_labels)
+    
+    print("Finished assigning labels")
+    
+    count = 0
+    for i, guessed_label in enumerate(guessed_labels):
+        if guessed_label == val_labels[i]: 
+            count += 1
+    
+    print('test projection')
+    print(count)
+    print(count / len(guessed_labels) * 100)        
+    
+    
+            
+        
+    
+    
