@@ -209,10 +209,4 @@ if __name__ == '__main__':
     
     print('test projection')
     print(count)
-    print(count / len(guessed_labels) * 100)        
-    
-    
-            
-        
-    
-    
+    print(count / len(guessed_labels) * 100)

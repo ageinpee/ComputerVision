@@ -15,3 +15,11 @@ Ideen fuer Klassifizierung:
 	    --> Nach anwenden des Filters werden die Kanten in Farbe x gefärbt. Die Anzahl dieser Pixel lässt sich Zählen und vergleichen.
     - Kantenorientierung
         --> Anwenden von h- und v-Sobel und dann abschätzen wie das Verhältnis von horizontalen zu vertikalen Kanten ist.
+
+
+TODO:
+>> Bessere Aufteilung in train und val
+>> Fixen der Aufteilung in train und val
+>> Auswerten der Image_stack-Daten
+>> k-nn statt 1-nn ausprobieren
+>> Auslagern der Algorithmen in Functions

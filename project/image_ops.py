@@ -114,7 +114,7 @@ def show_images(imgs, subplot_x, subplot_y):
                 ax[i,j].set_axis_off()
             else:
                 ax[i, j].set_axis_off()
-                ax[i, j].imshow(imgs[(i*subplot_y)+j], 'Greys_r')
+                ax[i, j].imshow(imgs[(i*subplot_y)+j], 'gray_r')
             index_count += 1
     plt.pyplot.show(block=True)
 
