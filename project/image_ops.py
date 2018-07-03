@@ -94,7 +94,7 @@ def augment_images(images, wanted_length, label='unknown'):
         for i in range(wanted_length-len(images)):
             choice = random.choice(images)
             choice = scipy.ndimage.interpolation.rotate(choice, float(random.choice([-10, -8.5, -7, -6, -5, -2,
-                                                                                     2, 5, 6, 7, 8.5, 10])), reshape=False)
+                                                                                     2, 5, 6, 7, 8.5, 10])), reshape=False, mode='constant', cval=255)
             out_images.append(choice)
             #print_progress_bar(i, wanted_length-len(images), prefix='augmenting images for label {0}:'.format(label), suffix='Complete', length=50)
     print('')
@@ -216,3 +216,13 @@ saves a list of ndarrays as a .npz compressed-numpy-file
 """
 def save_images_npz(file_path, images):
     np.savez_compressed(file_path, images)
+    
+def test():
+    images = load_images(input("Enter a file path for the images: "))
+    aug_imgs = {}
+    aug_imgs.fromkeys(images.keys(), [])
+    for key in images:
+        aug_imgs[key] = augment_images(images[key], 2000, label=key)
+    show_images(aug_imgs["F"][1000:2000], 30, 30)
+    for key in aug_imgs:
+        save_images_npz('C:/Users/Moritz Lahann/Desktop/STUDIUM/PRAKTIKUM COMPUTERVISION/DATA/TEST/' + key, aug_imgs[key])

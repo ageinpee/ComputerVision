@@ -170,6 +170,8 @@ if __name__ == '__main__':
     print(stack_means)
     '''
     
+    keylen = images["A"].shape[0]
+    
     binarized_images = {}
     binarized_images.fromkeys(images.keys(), [])
     train = {}
@@ -181,8 +183,8 @@ if __name__ == '__main__':
         binarized_images[key] = images[key][:,:,:,0]
         for i in range(len(binarized_images[key])):
             binarized_images[key][i] = to_binary(binarized_images[key][i], 127)
-        train[key] = binarized_images[key][0:900]
-        validate[key] = binarized_images[key][900:1000]
+        train[key] = binarized_images[key][0:int(keylen*0.8)]
+        validate[key] = binarized_images[key][int(keylen*0.8):keylen]
     
     train_projection = []
     train_labels = []
