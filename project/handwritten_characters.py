@@ -13,12 +13,18 @@ This file is supposed to host the script for a classification problem approach.
 Imports:
 ------------------------------------------------------------------------------------------------------------------------
 """
+#System:
 import random
 
+#Scientific
 import numpy as np
 import matplotlib.pyplot as plt
 
+#Local
 import image_ops
+
+#Miscellaneous
+import time
 
 
 """
@@ -86,31 +92,48 @@ def validate_stack(stack, imgs):
 def projection(tr_imgs, val_imgs, tr_labels):
     tr_x_hists = []
     tr_y_hists = []
+    j = 0
     for img in tr_imgs:
+        image_ops.print_progress_bar(j, len(tr_imgs) - 1, 
+                                     prefix='Processing training images',
+                                     suffix='Complete', length=50)
         tr_x_hists.append(histogram_x(img))
         tr_y_hists.append(histogram_y(img))
-    
-    print("Training Images converted to x-y-Histogram")
+        j += 1
     
     val_x_hists = []
     val_y_hists = []
+    j = 0
     for img in val_imgs:
+        image_ops.print_progress_bar(j, len(val_imgs) - 1, 
+                                     prefix='Processing validation images',
+                                     suffix='Complete', length=50)
         val_x_hists.append(histogram_x(img))
         val_y_hists.append(histogram_y(img))
-    
-    print("Validation Images converted to x-y-Histogram")
+        j += 1
     
     return validate_projection(np.hstack((tr_x_hists, tr_y_hists)), np.hstack((val_x_hists, val_y_hists)), tr_labels)
     
 
 def validate_projection(tr, val, tr_xy_labels):
     labels = []
+    j = 0
     for count in range(len(val)):
+        start = time.perf_counter()
+
         dists = []
         for i in range(len(tr)):
             dists.append(np.linalg.norm(tr[i] - val[count]))
         labels.append(tr_xy_labels[np.argmin(dists)])
-
+        
+        end = time.perf_counter()
+        #note this is pretty inaccurate, maybe do for every X iterations
+        remaining = (end - start) * (len(val) - j)
+        image_ops.print_progress_bar(j, len(val) - 1, 
+                                     prefix='Assigning labels',
+                                     suffix='{0}s remaining'.format(round(remaining)), length=50)
+        j += 1
+    
     return labels    
 """
 Main execution
@@ -200,15 +223,21 @@ if __name__ == '__main__':
             val_projection.append(img)
             val_labels.append(key)
     
+    start = time.time()
     guessed_labels = projection(train_projection, val_projection, train_labels)
+    end = time.time()
     
-    print("Finished assigning labels")
+    print('Finished in ' + str(round(end - start)) + ' seconds')
     
     count = 0
     for i, guessed_label in enumerate(guessed_labels):
+        image_ops.print_progress_bar(i, len(guessed_labels) - 1, 
+                                     prefix='Checking predictions',
+                                     suffix='Complete', length=50)
         if guessed_label == val_labels[i]: 
             count += 1
     
-    print('test projection')
-    print(count)
-    print(count / len(guessed_labels) * 100)
+    print('')
+    print('Results of projection: ')
+    print(str(count) + '/' + str(len(val_labels)) + ' correct')
+    print(str(count / len(guessed_labels) * 100) + '% accuracy')
