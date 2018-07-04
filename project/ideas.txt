@@ -23,3 +23,10 @@ TODO:
 >> Auswerten der Image_stack-Daten
 >> k-nn statt 1-nn ausprobieren
 >> Auslagern der Algorithmen in Functions
+
+Papers for CNN:
+
+https://arxiv.org/abs/1502.03167 Batch Normalization
+https://arxiv.org/abs/1705.05207 Structure for OCR of Chinese Characters
+https://arxiv.org/abs/1609.04836 Large-Batch vs Small-Batch Training
+https://arxiv.org/abs/1502.01852 PReLU rectifiers
