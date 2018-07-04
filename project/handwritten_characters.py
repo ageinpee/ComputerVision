@@ -108,6 +108,8 @@ def image_stack(tr, val, labels):
                    "Y": [], "Z": []}
     for j, tr_key in enumerate(train_stack):
         stack_means[tr_key].append(validate_stack(train_stack[tr_key], val))
+        image_ops.print_progress_bar(j, 26, prefix='Validating data for letter-stack {0}'.format(tr_key),
+                                     suffix='Complete', length=50)
 
     computed_labels = []
     for j in range(len(val)):
@@ -201,14 +203,20 @@ if __name__ == '__main__':
         image_ops.print_progress_bar(count, 25, prefix='Preparing tr/val-data for {0}'.format(key),
                                      suffix='Complete', length=50)
         images[key] = to_binary(images[key], 127)*255   # binarization of all images.
-        train[key], validate_dict[key] = create_tr_val_data(images[key], 1600, 400)   # no parameters = standard of 800/200 tr/val
-                                                                      # all tr/val lists are still ordered by label
+        train[key], validate_dict[key] = model_selection.train_test_split(images[key], test_size=0.2)
+        # create_tr_val_data(images[key], 1600, 400)
+        # no parameters = standard of 800/200 tr/val
+        # all tr/val lists are still ordered by label
         count += 1
 
+    count = 0
     for key in validate_dict:
-        validate = validate + validate_dict[key]
+        validate = validate + validate_dict[key].tolist()
         for i in range(len(validate_dict[key])):
             validate_labels.append(key)
+        count += 1
+        image_ops.print_progress_bar(count, 26, prefix='Preparing validation-list for letter {0}'.format(key),
+                                     suffix='Complete', length=50)
 
     for key in train:
         print("train", key, len(train[key]))
