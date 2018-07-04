@@ -19,6 +19,7 @@ import random
 #Scientific
 import numpy as np
 import matplotlib.pyplot as plt
+from sklearn import model_selection
 
 #Local
 import image_ops
@@ -230,8 +231,9 @@ if __name__ == '__main__':
         binarized_images[key] = images[key][:,:,:,0]
         for i in range(len(binarized_images[key])):
             binarized_images[key][i] = to_binary(binarized_images[key][i], 127)
-        train[key] = binarized_images[key][0:int(keylen*0.8)]
-        validate[key] = binarized_images[key][int(keylen*0.8):keylen]
+        train[key], validate[key] = model_selection.train_test_split(binarized_images[key], 
+                                                     test_size=0.2, 
+                                                     random_state=4505918)
     
     train_projection = []
     train_labels = []
