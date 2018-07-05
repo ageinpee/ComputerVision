@@ -79,9 +79,8 @@ takes a list of images as input and creates a image stack as described in ideas.
 
 
 def create_stack(imgs):
-    stack = np.zeros((28, 28, 4))#imgs[0].shape[0], imgs[0].shape[1], imgs[0].shape[3]))
-    for i, img in enumerate(imgs):
-        stack = (stack + img)
+    #stack = np.zeros((28, 28, 4))#imgs[0].shape[0], imgs[0].shape[1], imgs[0].shape[3]))
+    stack = sum(imgs)
     stack = stack / len(imgs)
     return stack
 
@@ -100,6 +99,11 @@ def image_stack(tr, val, labels):
         train_stack[k] = create_stack(tr[k])
         image_ops.print_progress_bar(i, 25, prefix='Creating stack for letter {0}'.format(k),
                                      suffix='Complete', length=50)
+
+    stack_list = []
+    for stack in train_stack:
+        stack_list.append((train_stack[stack]).astype(float))
+    image_ops.show_images(stack_list, 5, 6)
 
     stack_means = {"A": [], "B": [], "C": [], "D": [], "E": [], "F": [],
                    "G": [], "H": [], "I": [], "J": [], "K": [], "L": [],
@@ -217,11 +221,6 @@ if __name__ == '__main__':
         count += 1
         image_ops.print_progress_bar(count, 26, prefix='Preparing validation-list for letter {0}'.format(key),
                                      suffix='Complete', length=50)
-
-    for key in train:
-        print("train", key, len(train[key]))
-        print("validate_dict", key, len(validate_dict[key]))
-    print("validate", len(validate))
 
     print(image_stack(train, validate, validate_labels))
 
