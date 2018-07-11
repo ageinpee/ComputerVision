@@ -145,6 +145,10 @@ def projection(tr_imgs, val_imgs, tr_labels):
                                      suffix='Complete', length=50)
         tr_x_hists.append(histogram_x(img))
         tr_y_hists.append(histogram_y(img))
+        plt.hist(histogram_x(img))
+        plt.show()
+        plt.hist(histogram_y(img))
+        plt.show()
         j += 1
     
     val_x_hists = []
@@ -190,7 +194,7 @@ Main execution
 
 if __name__ == '__main__':
     images = image_ops.load_images_npz(input("Enter a file path for the npz-data: "))
-    
+    '''
     #for key in images:
     #    print(key, len(images[key]))
     #    images[key] = image_ops.augment_images(images[key], 200, key)
@@ -274,4 +278,4 @@ if __name__ == '__main__':
     print('Results of projection: ')
     print(str(count) + '/' + str(len(val_labels)) + ' correct')
     print(str(count / len(guessed_labels) * 100) + '% accuracy')
-    '''
+
