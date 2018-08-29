@@ -19,6 +19,7 @@ import random
 #Scientific
 import numpy as np
 import matplotlib.pyplot as plt
+import skimage.transform as skt
 from sklearn import model_selection
 
 #Local
@@ -33,10 +34,18 @@ Helping functions:
 ------------------------------------------------------------------------------------------------------------------------
 """
 
-
 def to_binary(img, value):
     return img < value
 
+def crop_image(img,tol=255):
+    mask = img < tol
+    coords = np.argwhere(mask)
+
+    x0, y0, z0 = coords.min(axis=0)
+    x1, y1, z1 = coords.max(axis=0) + 1   # slices are exclusive at the top
+
+    cropped = img[x0:x1, y0:y1]
+    return cropped
 
 def histogram_x(img):
     x_hist = []
@@ -79,52 +88,87 @@ takes a list of images as input and creates a image stack as described in ideas.
 
 
 def create_stack(imgs):
-    #stack = np.zeros((28, 28, 4))#imgs[0].shape[0], imgs[0].shape[1], imgs[0].shape[3]))
-    stack = sum(imgs)
+    cropped = []
+    for img in imgs:
+        crop = crop_image(img)
+        crop = skt.resize(crop, (28, 28, 4), anti_aliasing=True)
+        cropped.append(crop)
+
+    stack = sum(cropped)
     stack = stack / len(imgs)
     return stack
 
 
-def validate_stack(stack, imgs):
-    diff_list = []
-    for i, img in enumerate(imgs):
-        diff_list.append(np.mean(stack - img))
-    return diff_list
+def validate_image(stack, img):
+    img = np.asarray(img)
+    crop = crop_image(img)
+    crop = skt.resize(crop, (28, 28, 4), anti_aliasing=True)
+
+    return abs(np.mean(stack - crop))
 
 
 def image_stack(tr, val, labels):
-    train_stack = {}
-    train_stack.fromkeys(tr.keys(), [])
+    # val = list of arrays/lists. 26 elems. each list/array = validation images
+    # labels = list of labels. 10400 elems (2k data). ordered corresponding to val.
+
+    stacks = {}     # dict of all stacks. key defines which stack
+    stacks.fromkeys(tr.keys(), [])
     for i, k in enumerate(tr):
-        train_stack[k] = create_stack(tr[k])
+        stacks[k] = create_stack(tr[k])
         image_ops.print_progress_bar(i, 25, prefix='Creating stack for letter {0}'.format(k),
                                      suffix='Complete', length=50)
 
-    stack_list = []
-    for stack in train_stack:
-        stack_list.append((train_stack[stack]).astype(float))
-    image_ops.show_images(stack_list, 5, 6)
+    stack_list = []                                              # nur für
+    for stack in stacks:                                         # das anzeigen
+        stack_list.append((stacks[stack]*255).astype(np.uint8))  # der imagestacks
+    image_ops.show_images(stack_list, 5, 6)                      # zuständig
 
-    stack_means = {"A": [], "B": [], "C": [], "D": [], "E": [], "F": [],
-                   "G": [], "H": [], "I": [], "J": [], "K": [], "L": [],
-                   "M": [], "N": [], "O": [], "P": [], "Q": [], "R": [],
-                   "S": [], "T": [], "U": [], "V": [], "W": [], "X": [],
-                   "Y": [], "Z": []}
-    for j, tr_key in enumerate(train_stack):
-        stack_means[tr_key].append(validate_stack(train_stack[tr_key], val))
-        image_ops.print_progress_bar(j, 26, prefix='Validating data for letter-stack {0}'.format(tr_key),
+    means = []  # list of lists. 10400 elem (2k data). each list contains the means values from the
+                # validation. So the shape is (10400, 26)
+    subcount = 0
+    for letters in val:
+        for img in letters:
+            mean_list = []
+            for stack in stacks:
+                mean_list.append(validate_image(stacks[stack], img))
+            means.append(mean_list)
+        image_ops.print_progress_bar(subcount, 26,
+                                     prefix='Validating {0} images'.format(len(val)*len(letters)),
                                      suffix='Complete', length=50)
+        subcount += 1
+
 
     computed_labels = []
-    for j in range(len(val)):
-        temp_list_value = []
-        temp_list_label = []
-        for k in stack_means:
-            temp_list_value.append(stack_means[k][0][j])
-            temp_list_label.append(k)
-        computed_label = min(temp_list_value, key=abs)  # adds the one elem closest to 0
-        computed_labels.append(temp_list_label[temp_list_value.index(computed_label)])
-        image_ops.print_progress_bar(j, len(val), prefix='Computing performance of image_stack',
+    for ix, img_means in enumerate(means):
+        comp = min(img_means)
+        index = img_means.index(comp)
+        if index == 0: computed_labels.append('A')
+        elif index == 1: computed_labels.append('B')
+        elif index == 2: computed_labels.append('C')
+        elif index == 3: computed_labels.append('D')
+        elif index == 4: computed_labels.append('E')
+        elif index == 5: computed_labels.append('F')
+        elif index == 6: computed_labels.append('G')
+        elif index == 7: computed_labels.append('H')
+        elif index == 8: computed_labels.append('I')
+        elif index == 9: computed_labels.append('J')
+        elif index == 10: computed_labels.append('K')
+        elif index == 11: computed_labels.append('L')
+        elif index == 12: computed_labels.append('M')
+        elif index == 13: computed_labels.append('N')
+        elif index == 14: computed_labels.append('O')
+        elif index == 15: computed_labels.append('P')
+        elif index == 16: computed_labels.append('Q')
+        elif index == 17: computed_labels.append('R')
+        elif index == 18: computed_labels.append('S')
+        elif index == 19: computed_labels.append('T')
+        elif index == 20: computed_labels.append('U')
+        elif index == 21: computed_labels.append('V')
+        elif index == 22: computed_labels.append('W')
+        elif index == 23: computed_labels.append('X')
+        elif index == 24: computed_labels.append('Y')
+        elif index == 25: computed_labels.append('Z')
+        image_ops.print_progress_bar(ix, len(val), prefix='Computing performance of image_stack',
                                      suffix='Complete', length=50)
 
     percent = 0
@@ -132,7 +176,8 @@ def image_stack(tr, val, labels):
         if computed_labels[j] == labels[j]:
             percent += 1
 
-    return percent/len(computed_labels), list(zip(computed_labels, labels))
+    return 'Correct: ', percent, 'Total: ', len(computed_labels), \
+           'Percent: ', percent/len(computed_labels), list(zip(computed_labels, labels))
 
 
 def projection(tr_imgs, val_imgs, tr_labels):
@@ -194,32 +239,37 @@ Main execution
 
 if __name__ == '__main__':
     images = image_ops.load_images_npz(input("Enter a file path for the npz-data: "))
-    '''
+
     #for key in images:
     #    print(key, len(images[key]))
     #    images[key] = image_ops.augment_images(images[key], 200, key)
     #    image_ops.save_images_npz("data/Data_Test/Data_" + key, images[key])
 
-    train = {}
+    train = {}  # dictionary for the train images
     train.fromkeys(images.keys(), [])
-    validate_dict = {}
+    validate_dict = {}  # dictionary for the validation images
     validate_dict.fromkeys(images.keys(), [])
-    validate = []
-    validate_labels = []
+    validate = []  # list of imgs used for validation
+    validate_labels = []  # list of labels in the same order as 'validate', also used for validation
     count = 0
     for key in images:
         image_ops.print_progress_bar(count, 25, prefix='Preparing tr/val-data for {0}'.format(key),
                                      suffix='Complete', length=50)
-        images[key] = to_binary(images[key], 127)*255   # binarization of all images.
-        train[key], validate_dict[key] = model_selection.train_test_split(images[key], test_size=0.2)
+        for i in range(len(images)):
+            images[key][i] = to_binary(images[key][i], 127)*255   # binarization of all images.
+        train[key], validate_dict[key] = model_selection.train_test_split(images[key],
+                                                                          test_size=0.2,
+                                                                          random_state=4505918)
         # create_tr_val_data(images[key], 1600, 400)
         # no parameters = standard of 800/200 tr/val
         # all tr/val lists are still ordered by label
         count += 1
 
+    image_ops.show_images(validate_dict['A'], 20, 20)
+    print(validate)
     count = 0
     for key in validate_dict:
-        validate = validate + validate_dict[key].tolist()
+        validate.append(validate_dict[key])
         for i in range(len(validate_dict[key])):
             validate_labels.append(key)
         count += 1
@@ -227,6 +277,7 @@ if __name__ == '__main__':
                                      suffix='Complete', length=50)
 
     print(image_stack(train, validate, validate_labels))
+
 
     '''
     keylen = images["A"].shape[0]
@@ -278,4 +329,5 @@ if __name__ == '__main__':
     print('Results of projection: ')
     print(str(count) + '/' + str(len(val_labels)) + ' correct')
     print(str(count / len(guessed_labels) * 100) + '% accuracy')
+    '''
 
