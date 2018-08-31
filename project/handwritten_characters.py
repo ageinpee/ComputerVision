@@ -194,10 +194,10 @@ def projection(tr_imgs, val_imgs, tr_labels):
                                      suffix='Complete', length=50)
         tr_x_hists.append(histogram_x(img))
         tr_y_hists.append(histogram_y(img))
-        plt.hist(histogram_x(img))
-        plt.show()
-        plt.hist(histogram_y(img))
-        plt.show()
+        #plt.hist(histogram_x(img))
+        #plt.show()
+        #plt.hist(histogram_y(img))
+        #plt.show()
         j += 1
     
     val_x_hists = []
@@ -248,11 +248,7 @@ if __name__ == '__main__':
 
     t0 = time.time()
 
-    #for key in images:
-    #    print(key, len(images[key]))
-    #    images[key] = image_ops.augment_images(images[key], 200, key)
-    #    image_ops.save_images_npz("data/Data_Test/Data_" + key, images[key])
-
+    '''
     train = {}  # dictionary for the train images
     train.fromkeys(training_images.keys(), [])
     validate_dict = {}  # dictionary for the validation images
@@ -288,28 +284,35 @@ if __name__ == '__main__':
                                      suffix='Complete', length=50)
 
     print(image_stack(train, validate, validate_labels))
-
-    t1 = time.time()
-    print(t1-t0)
-
-
     '''
-    keylen = images["A"].shape[0]
+
+
+    keylen = training_images["A"].shape[0]
     
     binarized_images = {}
-    binarized_images.fromkeys(images.keys(), [])
+    binarized_images.fromkeys(training_images.keys(), [])
     train = {}
-    train.fromkeys(images.keys(), [])
+    train.fromkeys(training_images.keys(), [])
     validate = {}
-    validate.fromkeys(images.keys(), [])
+    validate.fromkeys(validation_images.keys(), [])
     
-    for key in images:
-        binarized_images[key] = images[key][:,:,:,0]
-        for i in range(len(binarized_images[key])):
-            binarized_images[key][i] = to_binary(binarized_images[key][i], 127)
-        train[key], validate[key] = model_selection.train_test_split(binarized_images[key], 
-                                                     test_size=0.2, 
-                                                     random_state=4505918)
+    count = 0
+    for key in training_images:
+        image_ops.print_progress_bar(count, 25, prefix='Preparing training-data for {0}'.format(key),
+                                     suffix='Complete', length=50)
+        for i in range(len(training_images)):
+            training_images[key][i] = to_binary(training_images[key][i], 127) * 255   # binarization of all images.
+        train[key] = training_images[key]
+        count += 1
+
+    count = 0
+    for key in validation_images:
+        image_ops.print_progress_bar(count, 25, prefix='Preparing validation-data for {0}'.format(key),
+                                     suffix='Complete', length=50)
+        for i in range(len(validation_images)):
+            validation_images[key][i] = to_binary(validation_images[key][i], 127) * 255   # binarization of all images.
+        validate[key] = validation_images[key]
+        count += 1
     
     train_projection = []
     train_labels = []
@@ -343,5 +346,7 @@ if __name__ == '__main__':
     print('Results of projection: ')
     print(str(count) + '/' + str(len(val_labels)) + ' correct')
     print(str(count / len(guessed_labels) * 100) + '% accuracy')
-    '''
+
+    t1 = time.time()
+    print(t1-t0)
 
