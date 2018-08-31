@@ -196,8 +196,8 @@ def image_stack(tr, val, labels):
     for j in range(len(computed_labels)):
         if computed_labels[j] == labels[j]:
             percent += 1
-
-    return computed_labels, labels
+    
+    return 'Correct: ', percent, 'Total: ', len(computed_labels), 'Percent: ', percent/len(computed_labels), list(zip(computed_labels, labels))
 
 
 def projection(tr_imgs, val_imgs, tr_labels):
@@ -337,36 +337,10 @@ if __name__ == '__main__':
         image_ops.print_progress_bar(count, 26, prefix='Preparing validation-list for letter {0}'.format(key),
                                      suffix='Complete', length=50)
 
-    guessed_labels, val_labels = image_stack(train, validate, validate_labels)
+    print(image_stack(train, validate, validate_labels))
 
     t1 = time.time()
     print(t1-t0)
-    
-    labeling = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
-                'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']    
-        
-    confmat = confusion_matrix(val_labels, guessed_labels, labels=labeling)
-    
-    confmat = confmat.astype('float') / confmat.sum(axis=1)[:, np.newaxis]
-    plt.figure()
-    plt.imshow(confmat, interpolation='nearest', cmap=plt.cm.Blues)
-    plt.title('Normalized Confusion Matrix')
-    plt.colorbar()
-    tick_marks = np.arange(26)
-    plt.xticks(tick_marks, labeling)
-    plt.yticks(tick_marks, labeling)
-    fmt = '.2f'
-    thresh = confmat.max() / 2.
-    for i, j in itertools.product(range(confmat.shape[0]), range(confmat.shape[1])):
-        plt.text(j, i, format(confmat[i, j], fmt).lstrip('0'),
-                 horizontalalignment="center", verticalalignment="center",
-                 color="white" if confmat[i, j] > thresh else "black",
-                 alpha=0.0 if confmat[i,j] <= 0.1 else 1.0)
-    plt.tight_layout()
-    plt.ylabel('True label')
-    plt.xlabel('Predicted label')
-    plt.show()
-
     '''
     train = projection_preprocessing(training_images)
     validate = projection_preprocessing(validation_images)
