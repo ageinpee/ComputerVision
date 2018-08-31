@@ -21,6 +21,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 import skimage.transform as skt
 from sklearn import model_selection
+from sklearn.metrics import confusion_matrix
+import itertools
+import keras
+from sklearn.neighbors import KNeighborsClassifier
+
+
 
 #Local
 import image_ops
@@ -86,6 +92,17 @@ Main functions:
 takes a list of images as input and creates a image stack as described in ideas.txt
 """
 
+def projection_preprocessing(images):
+    binarized_images = {}
+    binarized_images.fromkeys(images.keys(), [])
+    
+    for key in images:
+        binarized_images[key] = images[key][:,:,:,0]
+        for i in range(len(binarized_images[key])):
+            binarized_images[key][i] = to_binary(binarized_images[key][i], 127)
+    
+    return binarized_images
+    
 
 def create_stack(imgs):
     cropped = []
@@ -180,8 +197,7 @@ def image_stack(tr, val, labels):
         if computed_labels[j] == labels[j]:
             percent += 1
 
-    return 'Correct: ', percent, 'Total: ', len(computed_labels), \
-           'Percent: ', percent/len(computed_labels), list(zip(computed_labels, labels))
+    return computed_labels, labels
 
 
 def projection(tr_imgs, val_imgs, tr_labels):
@@ -194,10 +210,6 @@ def projection(tr_imgs, val_imgs, tr_labels):
                                      suffix='Complete', length=50)
         tr_x_hists.append(histogram_x(img))
         tr_y_hists.append(histogram_y(img))
-        plt.hist(histogram_x(img))
-        plt.show()
-        plt.hist(histogram_y(img))
-        plt.show()
         j += 1
     
     val_x_hists = []
@@ -235,6 +247,44 @@ def validate_projection(tr, val, tr_xy_labels):
     
     return labels
 
+def sklearn_knn(tr_imgs, val_imgs, tr_labels, val_labels, nneighbors):  
+    tr_x_hists = []
+    tr_y_hists = []
+    j = 0
+    for img in tr_imgs:
+        image_ops.print_progress_bar(j, len(tr_imgs) - 1, 
+                                     prefix='Processing training images',
+                                     suffix='Complete', length=50)
+        tr_x_hists.append(histogram_x(img))
+        tr_y_hists.append(histogram_y(img))
+        j += 1
+    
+    val_x_hists = []
+    val_y_hists = []
+    j = 0
+    for img in val_imgs:
+        image_ops.print_progress_bar(j, len(val_imgs) - 1, 
+                                     prefix='Processing validation images',
+                                     suffix='Complete', length=50)
+        val_x_hists.append(histogram_x(img))
+        val_y_hists.append(histogram_y(img))
+        j += 1
+    
+    for i in range(len(tr_labels)):
+            tr_labels[i] = ord(tr_labels[i])-65
+            
+    for i in range(len(val_labels)):
+            val_labels[i] = ord(val_labels[i])-65
+    
+    Y_train = keras.utils.to_categorical(tr_labels, 26)
+    Y_val = keras.utils.to_categorical(val_labels, 26)
+    
+    for i in range(1, 5):
+        model = KNeighborsClassifier(n_neighbors=i)
+        model.fit(np.hstack((tr_x_hists, tr_y_hists)), Y_train)
+        print(model.score(np.hstack((val_x_hists, val_y_hists)), Y_val))
+    #return model.score(np.hstack((val_x_hists, val_y_hists)), Y_val)
+
 
 """
 Main execution
@@ -245,7 +295,7 @@ if __name__ == '__main__':
     training_images = image_ops.load_images_npz(input("Enter a file path for the training-npz-data: "))
     validation_images = image_ops.load_images_npz(input("Enter a file path for the validation-npz-data: "))
 
-
+    '''
     t0 = time.time()
 
     #for key in images:
@@ -287,29 +337,39 @@ if __name__ == '__main__':
         image_ops.print_progress_bar(count, 26, prefix='Preparing validation-list for letter {0}'.format(key),
                                      suffix='Complete', length=50)
 
-    print(image_stack(train, validate, validate_labels))
+    guessed_labels, val_labels = image_stack(train, validate, validate_labels)
 
     t1 = time.time()
     print(t1-t0)
-
+    
+    labeling = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
+                'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']    
+        
+    confmat = confusion_matrix(val_labels, guessed_labels, labels=labeling)
+    
+    confmat = confmat.astype('float') / confmat.sum(axis=1)[:, np.newaxis]
+    plt.figure()
+    plt.imshow(confmat, interpolation='nearest', cmap=plt.cm.Blues)
+    plt.title('Normalized Confusion Matrix')
+    plt.colorbar()
+    tick_marks = np.arange(26)
+    plt.xticks(tick_marks, labeling)
+    plt.yticks(tick_marks, labeling)
+    fmt = '.2f'
+    thresh = confmat.max() / 2.
+    for i, j in itertools.product(range(confmat.shape[0]), range(confmat.shape[1])):
+        plt.text(j, i, format(confmat[i, j], fmt).lstrip('0'),
+                 horizontalalignment="center", verticalalignment="center",
+                 color="white" if confmat[i, j] > thresh else "black",
+                 alpha=0.0 if confmat[i,j] <= 0.1 else 1.0)
+    plt.tight_layout()
+    plt.ylabel('True label')
+    plt.xlabel('Predicted label')
+    plt.show()
 
     '''
-    keylen = images["A"].shape[0]
-    
-    binarized_images = {}
-    binarized_images.fromkeys(images.keys(), [])
-    train = {}
-    train.fromkeys(images.keys(), [])
-    validate = {}
-    validate.fromkeys(images.keys(), [])
-    
-    for key in images:
-        binarized_images[key] = images[key][:,:,:,0]
-        for i in range(len(binarized_images[key])):
-            binarized_images[key][i] = to_binary(binarized_images[key][i], 127)
-        train[key], validate[key] = model_selection.train_test_split(binarized_images[key], 
-                                                     test_size=0.2, 
-                                                     random_state=4505918)
+    train = projection_preprocessing(training_images)
+    validate = projection_preprocessing(validation_images)
     
     train_projection = []
     train_labels = []
@@ -324,6 +384,8 @@ if __name__ == '__main__':
         for img in validate[key]:
             val_projection.append(img)
             val_labels.append(key)
+    
+    print(sklearn_knn(train_projection, val_projection, train_labels, val_labels, 1))
     
     start = time.time()
     guessed_labels = projection(train_projection, val_projection, train_labels)
@@ -343,5 +405,29 @@ if __name__ == '__main__':
     print('Results of projection: ')
     print(str(count) + '/' + str(len(val_labels)) + ' correct')
     print(str(count / len(guessed_labels) * 100) + '% accuracy')
-    '''
+    
+    labeling = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
+                'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']    
+        
+    confmat = confusion_matrix(val_labels, guessed_labels, labels=labeling)
+    
+    confmat = confmat.astype('float') / confmat.sum(axis=1)[:, np.newaxis]
+    plt.figure()
+    plt.imshow(confmat, interpolation='nearest', cmap=plt.cm.Blues)
+    plt.title('Normalized Confusion Matrix')
+    plt.colorbar()
+    tick_marks = np.arange(26)
+    plt.xticks(tick_marks, labeling)
+    plt.yticks(tick_marks, labeling)
+    fmt = '.2f'
+    thresh = confmat.max() / 2.
+    for i, j in itertools.product(range(confmat.shape[0]), range(confmat.shape[1])):
+        plt.text(j, i, format(confmat[i, j], fmt).lstrip('0'),
+                 horizontalalignment="center", verticalalignment="center",
+                 color="white" if confmat[i, j] > thresh else "black",
+                 alpha=0.0 if confmat[i,j] <= 0.1 else 1.0)
+    plt.tight_layout()
+    plt.ylabel('True label')
+    plt.xlabel('Predicted label')
+    plt.show()
 
