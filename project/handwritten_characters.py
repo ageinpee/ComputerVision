@@ -43,8 +43,8 @@ def crop_image(img,tol=255):
 
     x0, y0, z0 = coords.min(axis=0)
     x1, y1, z1 = coords.max(axis=0) + 1   # slices are exclusive at the top
-
     cropped = img[x0:x1, y0:y1]
+
     return cropped
 
 def histogram_x(img):
@@ -90,8 +90,12 @@ takes a list of images as input and creates a image stack as described in ideas.
 def create_stack(imgs):
     cropped = []
     for img in imgs:
+        #plt.imshow(img, 'gray_r')
+        #plt.show(block=True)
         crop = crop_image(img)
         crop = skt.resize(crop, (28, 28, 4), anti_aliasing=True)
+        #plt.imshow(crop, 'gray_r')
+        #plt.show(block=True)
         cropped.append(crop)
 
     stack = sum(cropped)
@@ -118,10 +122,10 @@ def image_stack(tr, val, labels):
         image_ops.print_progress_bar(i, 25, prefix='Creating stack for letter {0}'.format(k),
                                      suffix='Complete', length=50)
 
-    stack_list = []                                              # nur für
-    for stack in stacks:                                         # das anzeigen
-        stack_list.append((stacks[stack]*255).astype(np.uint8))  # der imagestacks
-    image_ops.show_images(stack_list, 5, 6)                      # zuständig
+    #stack_list = []                                              # nur für
+    #for stack in stacks:                                         # das anzeigen
+    #    stack_list.append((stacks[stack]*255).astype(np.uint8))  # der imagestacks
+    #image_ops.show_images(stack_list, 5, 6)                      # zuständig
 
     means = []  # list of lists. 10400 elem (2k data). each list contains the means values from the
                 # validation. So the shape is (10400, 26)
@@ -238,7 +242,11 @@ Main execution
 """
 
 if __name__ == '__main__':
-    images = image_ops.load_images_npz(input("Enter a file path for the npz-data: "))
+    training_images = image_ops.load_images_npz(input("Enter a file path for the training-npz-data: "))
+    validation_images = image_ops.load_images_npz(input("Enter a file path for the validation-npz-data: "))
+
+
+    t0 = time.time()
 
     #for key in images:
     #    print(key, len(images[key]))
@@ -246,27 +254,30 @@ if __name__ == '__main__':
     #    image_ops.save_images_npz("data/Data_Test/Data_" + key, images[key])
 
     train = {}  # dictionary for the train images
-    train.fromkeys(images.keys(), [])
+    train.fromkeys(training_images.keys(), [])
     validate_dict = {}  # dictionary for the validation images
-    validate_dict.fromkeys(images.keys(), [])
+    validate_dict.fromkeys(training_images.keys(), [])
     validate = []  # list of imgs used for validation
     validate_labels = []  # list of labels in the same order as 'validate', also used for validation
+
     count = 0
-    for key in images:
-        image_ops.print_progress_bar(count, 25, prefix='Preparing tr/val-data for {0}'.format(key),
+    for key in training_images:
+        image_ops.print_progress_bar(count, 25, prefix='Preparing training-data for {0}'.format(key),
                                      suffix='Complete', length=50)
-        for i in range(len(images)):
-            images[key][i] = to_binary(images[key][i], 127)*255   # binarization of all images.
-        train[key], validate_dict[key] = model_selection.train_test_split(images[key],
-                                                                          test_size=0.2,
-                                                                          random_state=4505918)
-        # create_tr_val_data(images[key], 1600, 400)
-        # no parameters = standard of 800/200 tr/val
-        # all tr/val lists are still ordered by label
+        for i in range(len(training_images)):
+            training_images[key][i] = to_binary(training_images[key][i], 127) * 255   # binarization of all images.
+        train[key] = training_images[key]
         count += 1
 
-    image_ops.show_images(validate_dict['A'], 20, 20)
-    print(validate)
+    count = 0
+    for key in validation_images:
+        image_ops.print_progress_bar(count, 25, prefix='Preparing validation-data for {0}'.format(key),
+                                     suffix='Complete', length=50)
+        for i in range(len(validation_images)):
+            validation_images[key][i] = to_binary(validation_images[key][i], 127) * 255   # binarization of all images.
+        validate_dict[key] = validation_images[key]
+        count += 1
+
     count = 0
     for key in validate_dict:
         validate.append(validate_dict[key])
@@ -277,6 +288,9 @@ if __name__ == '__main__':
                                      suffix='Complete', length=50)
 
     print(image_stack(train, validate, validate_labels))
+
+    t1 = time.time()
+    print(t1-t0)
 
 
     '''
