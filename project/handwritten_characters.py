@@ -20,6 +20,7 @@ import random
 import numpy as np
 import matplotlib.pyplot as plt
 import skimage.transform as skt
+import skimage.color as skc
 from sklearn import model_selection
 from sklearn.metrics import confusion_matrix
 import itertools
@@ -41,7 +42,7 @@ Helping functions:
 """
 
 def to_binary(img, value):
-    return img < value
+    return img > value
 
 def crop_image(img,tol=255):
     mask = img < tol
@@ -106,13 +107,10 @@ def projection_preprocessing(images):
 
 def create_stack(imgs):
     cropped = []
+
     for img in imgs:
-        #plt.imshow(img, 'gray_r')
-        #plt.show(block=True)
         crop = crop_image(img)
         crop = skt.resize(crop, (28, 28, 4), anti_aliasing=True)
-        #plt.imshow(crop, 'gray_r')
-        #plt.show(block=True)
         cropped.append(crop)
 
     stack = sum(cropped)
@@ -258,6 +256,16 @@ def sklearn_knn(tr_imgs, val_imgs, tr_labels, val_labels, nneighbors):
         tr_x_hists.append(histogram_x(img))
         tr_y_hists.append(histogram_y(img))
         j += 1
+
+        print(histogram_x(img))
+        index = np.arange(28)
+        plt.bar(index, histogram_x(img))
+        plt.show(block=True)
+        plt.barh(index, histogram_y(img))
+        plt.show(block=True)
+        index = np.arange(28*2)
+        plt.bar(index, np.hstack((histogram_x(img), histogram_y(img))))
+        plt.show(block=True)
     
     val_x_hists = []
     val_y_hists = []
@@ -295,7 +303,7 @@ if __name__ == '__main__':
     training_images = image_ops.load_images_npz(input("Enter a file path for the training-npz-data: "))
     validation_images = image_ops.load_images_npz(input("Enter a file path for the validation-npz-data: "))
 
-    '''
+
     t0 = time.time()
 
     #for key in images:
@@ -314,8 +322,11 @@ if __name__ == '__main__':
     for key in training_images:
         image_ops.print_progress_bar(count, 25, prefix='Preparing training-data for {0}'.format(key),
                                      suffix='Complete', length=50)
-        for i in range(len(training_images)):
-            training_images[key][i] = to_binary(training_images[key][i], 127) * 255   # binarization of all images.
+
+        for i in range(len(training_images[key])):
+            training_images[key][i] = to_binary(training_images[key][i], 127)*255
+            training_images[key][i] = np.invert(training_images[key][i])
+            training_images[key][i][:,:,3] = 255
         train[key] = training_images[key]
         count += 1
 
@@ -323,8 +334,10 @@ if __name__ == '__main__':
     for key in validation_images:
         image_ops.print_progress_bar(count, 25, prefix='Preparing validation-data for {0}'.format(key),
                                      suffix='Complete', length=50)
-        for i in range(len(validation_images)):
-            validation_images[key][i] = to_binary(validation_images[key][i], 127) * 255   # binarization of all images.
+        for i in range(len(validation_images[key])):
+            validation_images[key][i] = to_binary(validation_images[key][i], 127)*255  # binarization of all images.
+            validation_images[key][i] = np.invert(validation_images[key][i])
+            validation_images[key][i][:,:,3] = 255
         validate_dict[key] = validation_images[key]
         count += 1
 
@@ -341,10 +354,17 @@ if __name__ == '__main__':
 
     t1 = time.time()
     print(t1-t0)
-    '''
+
+    """
+    plt.imshow(training_images['A'][0], 'gray_r')
+    plt.show(block=True)
+
     train = projection_preprocessing(training_images)
     validate = projection_preprocessing(validation_images)
-    
+
+    plt.imshow(train['A'][0], 'gray_r')
+    plt.show(block=True)
+
     train_projection = []
     train_labels = []
     for key in train:
@@ -404,4 +424,4 @@ if __name__ == '__main__':
     plt.ylabel('True label')
     plt.xlabel('Predicted label')
     plt.show()
-
+    """
