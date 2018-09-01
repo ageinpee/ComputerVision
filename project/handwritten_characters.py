@@ -20,7 +20,6 @@ import random
 import numpy as np
 import matplotlib.pyplot as plt
 import skimage.transform as skt
-import skimage.color as skc
 from sklearn import model_selection
 from sklearn.metrics import confusion_matrix
 import itertools
@@ -151,7 +150,7 @@ def create_stack(imgs):
 
 def validate_image(stack, img):
     """
-    Vergleicht einen stack mit einem Bild. Errechnet den Absoluten Mittelwert der Differenz der beiden Bilder.
+    Vergleicht einen stack mit einem Bild. Errechnet den Mittelwert der absoluten Differenz der beiden Bilder.
     @params:
         stack --> der Stack mit dem verglichen werden soll. Repräsentiert durch ein ndarray.
         img --> das Bild das verglichen werden soll. Repräsentiert durch ein ndarray.
@@ -160,7 +159,7 @@ def validate_image(stack, img):
     crop = crop_image(img)
     crop = skt.resize(crop, (28, 28, 4), anti_aliasing=True)
 
-    return abs(np.mean(stack - crop))
+    return np.mean(np.abs(stack - crop))
 
 
 def image_stack(tr, val, labels):
@@ -233,13 +232,46 @@ def image_stack(tr, val, labels):
         elif index == 23: computed_labels.append('X')
         elif index == 24: computed_labels.append('Y')
         elif index == 25: computed_labels.append('Z')
-        image_ops.print_progress_bar(ix, len(val), prefix='Computing performance of image_stack',
+        image_ops.print_progress_bar(ix, len(means), prefix='Computing performance of image_stack',
                                      suffix='Complete', length=50)
 
     percent = 0
     for j in range(len(computed_labels)):
         if computed_labels[j] == labels[j]:
             percent += 1
+
+    # plt.figure()
+    # cm = confusion_matrix(labels, computed_labels, labels=['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K',
+    #                                                   'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V',
+    #                                                   'W', 'X', 'Y', 'Z'])
+    # cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
+    # cmap=plt.cm.Blues
+    # classes = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
+    #            'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
+    # print("Normalized confusion matrix")
+    # print(cm)
+    #
+    # plt.imshow(cm, interpolation='nearest', cmap=cmap)
+    # plt.title("normalized confusion matrix")
+    # plt.colorbar()
+    # tick_marks = np.arange(len(classes))
+    # plt.xticks(tick_marks, classes)
+    # plt.yticks(tick_marks, classes)
+    #
+    # fmt = '.2f'
+    # thresh = cm.max() / 2.
+    # for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
+    #     if cm[i, j] > cm.max()/100:
+    #         plt.text(j, i, format(cm[i, j], fmt),
+    #                  horizontalalignment="center",
+    #                  color="white" if cm[i, j] > thresh else "black",
+    #                  size='xx-small')
+    #
+    # plt.tight_layout()
+    # plt.ylabel('True label')
+    # plt.xlabel('Predicted label')
+    #
+    # plt.show(block=True)
     
     return 'Correct: ', percent, 'Total: ', len(computed_labels), 'Percent: ', percent/len(computed_labels), list(zip(computed_labels, labels))
 
