@@ -41,10 +41,25 @@ Helping functions:
 ------------------------------------------------------------------------------------------------------------------------
 """
 
+
 def to_binary(img, value):
+    """
+    Binarisiert ein Bild.
+    @params:
+        img --> ein Bild repräsentiert als ndarray
+        value --> Schwellwert
+    """
     return img > value
 
+
 def crop_image(img,tol=255):
+    """
+    Croppt einen Buchstaben aus einem Bild. Es wird eine Bounding Box bestimmt mit dessen Hilfe ein Buchstabe aus dem Bild
+        geschnitten wird.
+    @params:
+        img --> ein Bild repräsentiert als ndarray
+        value --> Toleranzwert für das Cropping
+    """
     mask = img < tol
     coords = np.argwhere(mask)
 
@@ -54,17 +69,31 @@ def crop_image(img,tol=255):
 
     return cropped
 
+
 def histogram_x(img):
+    """
+    Erstellt eine X-Projektion eines Bildes.
+    @params:
+        img --> ein Bild repräsentiert als ndarray
+    """
     x_hist = []
     for i in img:
         x_hist.append(sum(i))
     return x_hist
 
+
+
 def histogram_y(img):
+    """
+    Erstellt eine Y-Projektion eines Bildes.
+    @params:
+        img --> ein Bild repräsentiert als ndarray
+    """
     y_hist = []
     for i in np.transpose(img):
         y_hist.append(sum(i))
     return y_hist
+
 
 """
 IMPORTANT NOTE: Input is either a list or ndarray. Output is a tuple of 2 lists of images
@@ -89,10 +118,6 @@ Main functions:
 """
 
 
-"""
-takes a list of images as input and creates a image stack as described in ideas.txt
-"""
-
 def projection_preprocessing(images):
     binarized_images = {}
     binarized_images.fromkeys(images.keys(), [])
@@ -106,6 +131,12 @@ def projection_preprocessing(images):
     
 
 def create_stack(imgs):
+    """
+    Erstellt eine Imagestack aus einer Liste von Bildern. Es wird für jeden Pixel das Mittel aus allen Pixeln an dieser
+        Stelle berechnet.
+    @params:
+        imgs --> liste von Bildern repräsentiert durch ein ndarray
+    """
     cropped = []
 
     for img in imgs:
@@ -119,6 +150,12 @@ def create_stack(imgs):
 
 
 def validate_image(stack, img):
+    """
+    Vergleicht einen stack mit einem Bild. Errechnet den Absoluten Mittelwert der Differenz der beiden Bilder.
+    @params:
+        stack --> der Stack mit dem verglichen werden soll. Repräsentiert durch ein ndarray.
+        img --> das Bild das verglichen werden soll. Repräsentiert durch ein ndarray.
+    """
     img = np.asarray(img)
     crop = crop_image(img)
     crop = skt.resize(crop, (28, 28, 4), anti_aliasing=True)
@@ -127,6 +164,15 @@ def validate_image(stack, img):
 
 
 def image_stack(tr, val, labels):
+    """
+    Die Hauptroutine des Imagestack-Verfahrens. Benutzt das Imagestack-Verfahren um einen Datensatz auszuwerten.
+    @params:
+        tr --> Der Trainingsdatensatz. Ein Dictionary. Jeder Key beherbergt eine Liste mit allen Bildern einer Klasse.
+        val --> Der Validierungsdatensatz. Eine Liste. Beinhaltet alle Validierungsbilder in einer festen Reihenfolge.
+        labels --> Die korrekten Labels der Validierungsdaten. Eine Liste. Beinhaltet alle korrekten Labels der
+                        Validierungsdaten in fester Reihenfolge. Die Reihenfolge ist gleich der von val.
+    @:return --> string bestehen aus dem Ergebnis des Verfahrens.
+    """
     # val = list of arrays/lists. 26 elems. each list/array = validation images
     # labels = list of labels. 10400 elems (2k data). ordered corresponding to val.
 

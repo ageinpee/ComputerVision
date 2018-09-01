@@ -26,7 +26,6 @@ Helping functions:
 ------------------------------------------------------------------------------------------------------------------------
 """
 
-
 # Print iterations progress
 def print_progress_bar(iteration, total, prefix='', suffix='', decimals=1, length=100, fill='█'):
     """
@@ -71,6 +70,13 @@ Main functions:
 
 
 def augment_images(images, wanted_length, label='unknown'):
+    """
+    Augmentiert einen Datensatz von Bildern.
+    @params
+        images --> Datensatz der Bilder.
+        wanted_length --> die gewünschte Anzahl der Bilder pro Klasse
+        label --> das Label der Klasse. Default='unknown'
+    """
     out_images = []
     if len(images) >= wanted_length:
         print_progress_bar(0, wanted_length, prefix='augmenting images for label {0}:'.format(label), suffix='Complete', length=50)
@@ -101,7 +107,15 @@ def augment_images(images, wanted_length, label='unknown'):
     return out_images
 
 
+
 def show_images(imgs, subplot_x, subplot_y):
+    """
+    Hilfmethode zur Ausgabe von mehreren Bildern auf einmal.
+    @params:
+        imgs --> Liste oder ndarray mit Bildern.
+        subplot_x --> Anzahl der max. Bilderanzahl auf der x-Achse
+        subplot_y --> Anzahl der max. Bilderanzahl auf der y-Achse
+    """
     fig, ax = plt.pyplot.subplots(subplot_x, subplot_y)
 
     if len(imgs) > subplot_x * subplot_y:
@@ -216,7 +230,8 @@ saves a list of ndarrays as a .npz compressed-numpy-file
 """
 def save_images_npz(file_path, images):
     np.savez_compressed(file_path, images)
-    
+
+
 def test():
     images = load_images(input("Enter a file path for the images: "))
     aug_imgs = {}
