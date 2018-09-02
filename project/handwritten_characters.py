@@ -145,6 +145,7 @@ def create_stack(imgs):
 
     stack = sum(cropped)
     stack = stack / len(imgs)
+
     return stack
 
 
@@ -335,15 +336,15 @@ def sklearn_knn(tr_imgs, val_imgs, tr_labels, val_labels, nneighbors):
         tr_y_hists.append(histogram_y(img))
         j += 1
 
-        print(histogram_x(img))
-        index = np.arange(28)
-        plt.bar(index, histogram_x(img))
-        plt.show(block=True)
-        plt.barh(index, histogram_y(img))
-        plt.show(block=True)
-        index = np.arange(28*2)
-        plt.bar(index, np.hstack((histogram_x(img), histogram_y(img))))
-        plt.show(block=True)
+        #print(histogram_x(img))
+        #index = np.arange(28)
+        #plt.bar(index, histogram_x(img))
+        #plt.show(block=True)
+        #plt.barh(index, histogram_y(img))
+        #plt.show(block=True)
+        #index = np.arange(28*2)
+        #plt.bar(index, np.hstack((histogram_x(img), histogram_y(img))))
+        #plt.show(block=True)
     
     val_x_hists = []
     val_y_hists = []
@@ -380,126 +381,120 @@ Main execution
 if __name__ == '__main__':
     training_images = image_ops.load_images_npz(input("Enter a file path for the training-npz-data: "))
     validation_images = image_ops.load_images_npz(input("Enter a file path for the validation-npz-data: "))
+    algorithm = (input("Enter 'imagestack' for Image-Stack-Algorithm or 'projection' for X-Y-Projection-Algorithm: "))
 
+    if algorithm == 'imagestack':
+        t0 = time.time()
 
-    t0 = time.time()
+        #for key in images:
+        #    print(key, len(images[key]))
+        #    images[key] = image_ops.augment_images(images[key], 200, key)
+        #    image_ops.save_images_npz("data/Data_Test/Data_" + key, images[key])
 
-    #for key in images:
-    #    print(key, len(images[key]))
-    #    images[key] = image_ops.augment_images(images[key], 200, key)
-    #    image_ops.save_images_npz("data/Data_Test/Data_" + key, images[key])
+        train = {}  # dictionary for the train images
+        train.fromkeys(training_images.keys(), [])
+        validate_dict = {}  # dictionary for the validation images
+        validate_dict.fromkeys(training_images.keys(), [])
+        validate = []  # list of imgs used for validation
+        validate_labels = []  # list of labels in the same order as 'validate', also used for validation
 
-    train = {}  # dictionary for the train images
-    train.fromkeys(training_images.keys(), [])
-    validate_dict = {}  # dictionary for the validation images
-    validate_dict.fromkeys(training_images.keys(), [])
-    validate = []  # list of imgs used for validation
-    validate_labels = []  # list of labels in the same order as 'validate', also used for validation
+        count = 0
+        for key in training_images:
+            image_ops.print_progress_bar(count, 25, prefix='Preparing training-data for {0}'.format(key),
+                                         suffix='Complete', length=50)
 
-    count = 0
-    for key in training_images:
-        image_ops.print_progress_bar(count, 25, prefix='Preparing training-data for {0}'.format(key),
-                                     suffix='Complete', length=50)
-
-        for i in range(len(training_images[key])):
-            training_images[key][i] = to_binary(training_images[key][i], 127)*255
-            training_images[key][i] = np.invert(training_images[key][i])
-            training_images[key][i][:,:,3] = 255
-        train[key] = training_images[key]
-        count += 1
-
-    count = 0
-    for key in validation_images:
-        image_ops.print_progress_bar(count, 25, prefix='Preparing validation-data for {0}'.format(key),
-                                     suffix='Complete', length=50)
-        for i in range(len(validation_images[key])):
-            validation_images[key][i] = to_binary(validation_images[key][i], 127)*255  # binarization of all images.
-            validation_images[key][i] = np.invert(validation_images[key][i])
-            validation_images[key][i][:,:,3] = 255
-        validate_dict[key] = validation_images[key]
-        count += 1
-
-    count = 0
-    for key in validate_dict:
-        validate.append(validate_dict[key])
-        for i in range(len(validate_dict[key])):
-            validate_labels.append(key)
-        count += 1
-        image_ops.print_progress_bar(count, 26, prefix='Preparing validation-list for letter {0}'.format(key),
-                                     suffix='Complete', length=50)
-
-    print(image_stack(train, validate, validate_labels))
-
-    t1 = time.time()
-    print(t1-t0)
-
-    """
-    plt.imshow(training_images['A'][0], 'gray_r')
-    plt.show(block=True)
-
-    train = projection_preprocessing(training_images)
-    validate = projection_preprocessing(validation_images)
-
-    plt.imshow(train['A'][0], 'gray_r')
-    plt.show(block=True)
-
-    train_projection = []
-    train_labels = []
-    for key in train:
-        for img in train[key]:
-            train_projection.append(img)
-            train_labels.append(key)
-    
-    val_projection = []
-    val_labels = []
-    for key in validate:
-        for img in validate[key]:
-            val_projection.append(img)
-            val_labels.append(key)
-    
-    print(sklearn_knn(train_projection, val_projection, train_labels, val_labels, 1))
-    
-    start = time.time()
-    guessed_labels = projection(train_projection, val_projection, train_labels)
-    end = time.time()
-    
-    print('Finished in ' + str(round(end - start)) + ' seconds')
-    
-    count = 0
-    for i, guessed_label in enumerate(guessed_labels):
-        image_ops.print_progress_bar(i, len(guessed_labels) - 1, 
-                                     prefix='Checking predictions',
-                                     suffix='Complete', length=50)
-        if guessed_label == val_labels[i]: 
+            for i in range(len(training_images[key])):
+                training_images[key][i] = to_binary(training_images[key][i], 127)*255
+                training_images[key][i] = np.invert(training_images[key][i])
+                training_images[key][i][:,:,3] = 255
+            train[key] = training_images[key]
             count += 1
-    
-    print('')
-    print('Results of projection: ')
-    print(str(count) + '/' + str(len(val_labels)) + ' correct')
-    print(str(count / len(guessed_labels) * 100) + '% accuracy')
-    
-    labeling = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
-                'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']    
-        
-    confmat = confusion_matrix(val_labels, guessed_labels, labels=labeling)
-    
-    confmat = confmat.astype('float') / confmat.sum(axis=1)[:, np.newaxis]
-    plt.figure()
-    plt.imshow(confmat, interpolation='nearest', cmap=plt.cm.Blues)
-    plt.title('Normalized Confusion Matrix')
-    plt.colorbar()
-    tick_marks = np.arange(26)
-    plt.xticks(tick_marks, labeling)
-    plt.yticks(tick_marks, labeling)
-    fmt = '.2f'
-    thresh = confmat.max() / 2.
-    for i, j in itertools.product(range(confmat.shape[0]), range(confmat.shape[1])):
-        plt.text(j, i, format(confmat[i, j], fmt).lstrip('0'),
-                 horizontalalignment="center", verticalalignment="center",
-                 color="white" if confmat[i, j] > thresh else "black",
-                 alpha=0.0 if confmat[i,j] <= 0.1 else 1.0)
-    plt.tight_layout()
-    plt.ylabel('True label')
-    plt.xlabel('Predicted label')
-    plt.show()
-    """
+
+        count = 0
+        for key in validation_images:
+            image_ops.print_progress_bar(count, 25, prefix='Preparing validation-data for {0}'.format(key),
+                                         suffix='Complete', length=50)
+            for i in range(len(validation_images[key])):
+                validation_images[key][i] = to_binary(validation_images[key][i], 127)*255  # binarization of all images.
+                validation_images[key][i] = np.invert(validation_images[key][i])
+                validation_images[key][i][:,:,3] = 255
+            validate_dict[key] = validation_images[key]
+            count += 1
+
+        count = 0
+        for key in validate_dict:
+            validate.append(validate_dict[key])
+            for i in range(len(validate_dict[key])):
+                validate_labels.append(key)
+            count += 1
+            image_ops.print_progress_bar(count, 26, prefix='Preparing validation-list for letter {0}'.format(key),
+                                         suffix='Complete', length=50)
+
+        print(image_stack(train, validate, validate_labels))
+
+        t1 = time.time()
+        print(t1-t0)
+
+    elif algorithm == 'projection':
+        train = projection_preprocessing(training_images)
+        validate = projection_preprocessing(validation_images)
+
+        train_projection = []
+        train_labels = []
+        for key in train:
+            for img in train[key]:
+                train_projection.append(img)
+                train_labels.append(key)
+
+        val_projection = []
+        val_labels = []
+        for key in validate:
+            for img in validate[key]:
+                val_projection.append(img)
+                val_labels.append(key)
+
+        print(sklearn_knn(train_projection, val_projection, train_labels, val_labels, 1))
+
+        start = time.time()
+        guessed_labels = projection(train_projection, val_projection, train_labels)
+        end = time.time()
+
+        print('Finished in ' + str(round(end - start)) + ' seconds')
+
+        count = 0
+        for i, guessed_label in enumerate(guessed_labels):
+            image_ops.print_progress_bar(i, len(guessed_labels) - 1,
+                                         prefix='Checking predictions',
+                                         suffix='Complete', length=50)
+            if guessed_label == val_labels[i]:
+                count += 1
+
+        print('')
+        print('Results of projection: ')
+        print(str(count) + '/' + str(len(val_labels)) + ' correct')
+        print(str(count / len(guessed_labels) * 100) + '% accuracy')
+
+        labeling = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
+                    'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
+
+        confmat = confusion_matrix(val_labels, guessed_labels, labels=labeling)
+
+        confmat = confmat.astype('float') / confmat.sum(axis=1)[:, np.newaxis]
+        plt.figure()
+        plt.imshow(confmat, interpolation='nearest', cmap=plt.cm.Blues)
+        plt.title('Normalized Confusion Matrix')
+        plt.colorbar()
+        tick_marks = np.arange(26)
+        plt.xticks(tick_marks, labeling)
+        plt.yticks(tick_marks, labeling)
+        fmt = '.2f'
+        thresh = confmat.max() / 2.
+        for i, j in itertools.product(range(confmat.shape[0]), range(confmat.shape[1])):
+            plt.text(j, i, format(confmat[i, j], fmt).lstrip('0'),
+                     horizontalalignment="center", verticalalignment="center",
+                     color="white" if confmat[i, j] > thresh else "black",
+                     alpha=0.0 if confmat[i,j] <= 0.1 else 1.0)
+        plt.tight_layout()
+        plt.ylabel('True label')
+        plt.xlabel('Predicted label')
+        plt.show()
