@@ -81,7 +81,6 @@ def histogram_x(img):
     return x_hist
 
 
-
 def histogram_y(img):
     """
     Erstellt eine Y-Projektion eines Bildes.
@@ -92,23 +91,6 @@ def histogram_y(img):
     for i in np.transpose(img):
         y_hist.append(sum(i))
     return y_hist
-
-
-"""
-IMPORTANT NOTE: Input is either a list or ndarray. Output is a tuple of 2 lists of images
-"""
-def create_tr_val_data(imgs, num_tr=800, num_val=200):
-    tr = []
-    val = []
-    for i in range(0, num_tr):
-        choice = random.choice(range(len(imgs)))
-        tr.append(imgs[choice])
-        image_ops.remove_array(imgs, imgs[choice])
-    for i in range(0, num_val):
-        choice = random.choice(range(len(imgs)))
-        val.append(imgs[choice])
-        image_ops.remove_array(imgs, imgs[choice])
-    return tr, val
 
 
 """
@@ -240,39 +222,6 @@ def image_stack(tr, val, labels):
     for j in range(len(computed_labels)):
         if computed_labels[j] == labels[j]:
             percent += 1
-
-    # plt.figure()
-    # cm = confusion_matrix(labels, computed_labels, labels=['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K',
-    #                                                   'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V',
-    #                                                   'W', 'X', 'Y', 'Z'])
-    # cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
-    # cmap=plt.cm.Blues
-    # classes = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
-    #            'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
-    # print("Normalized confusion matrix")
-    # print(cm)
-    #
-    # plt.imshow(cm, interpolation='nearest', cmap=cmap)
-    # plt.title("normalized confusion matrix")
-    # plt.colorbar()
-    # tick_marks = np.arange(len(classes))
-    # plt.xticks(tick_marks, classes)
-    # plt.yticks(tick_marks, classes)
-    #
-    # fmt = '.2f'
-    # thresh = cm.max() / 2.
-    # for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
-    #     if cm[i, j] > cm.max()/100:
-    #         plt.text(j, i, format(cm[i, j], fmt),
-    #                  horizontalalignment="center",
-    #                  color="white" if cm[i, j] > thresh else "black",
-    #                  size='xx-small')
-    #
-    # plt.tight_layout()
-    # plt.ylabel('True label')
-    # plt.xlabel('Predicted label')
-    #
-    # plt.show(block=True)
     
     return 'Correct: ', percent, 'Total: ', len(computed_labels), 'Percent: ', percent/len(computed_labels), list(zip(computed_labels, labels))
 
@@ -433,9 +382,10 @@ if __name__ == '__main__':
         print(image_stack(train, validate, validate_labels))
 
         t1 = time.time()
-        print(t1-t0)
+        print("Laufzeit: ", t1-t0)
 
     elif algorithm == 'projection':
+        t0 = time.time()
         train = projection_preprocessing(training_images)
         validate = projection_preprocessing(validation_images)
 
@@ -454,6 +404,8 @@ if __name__ == '__main__':
                 val_labels.append(key)
 
         print(sklearn_knn(train_projection, val_projection, train_labels, val_labels, 1))
+        t2 = time.time()
+        print('Laufzeit: ', t2-t0, 'Sekunden')
 
         start = time.time()
         guessed_labels = projection(train_projection, val_projection, train_labels)
@@ -474,27 +426,8 @@ if __name__ == '__main__':
         print(str(count) + '/' + str(len(val_labels)) + ' correct')
         print(str(count / len(guessed_labels) * 100) + '% accuracy')
 
-        labeling = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
-                    'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
+        t1 = time.time()
+        print("gesamte Laufzeit: ", t1-t0, 'Sekunden')
 
-        confmat = confusion_matrix(val_labels, guessed_labels, labels=labeling)
-
-        confmat = confmat.astype('float') / confmat.sum(axis=1)[:, np.newaxis]
-        plt.figure()
-        plt.imshow(confmat, interpolation='nearest', cmap=plt.cm.Blues)
-        plt.title('Normalized Confusion Matrix')
-        plt.colorbar()
-        tick_marks = np.arange(26)
-        plt.xticks(tick_marks, labeling)
-        plt.yticks(tick_marks, labeling)
-        fmt = '.2f'
-        thresh = confmat.max() / 2.
-        for i, j in itertools.product(range(confmat.shape[0]), range(confmat.shape[1])):
-            plt.text(j, i, format(confmat[i, j], fmt).lstrip('0'),
-                     horizontalalignment="center", verticalalignment="center",
-                     color="white" if confmat[i, j] > thresh else "black",
-                     alpha=0.0 if confmat[i,j] <= 0.1 else 1.0)
-        plt.tight_layout()
-        plt.ylabel('True label')
-        plt.xlabel('Predicted label')
-        plt.show()
+    else:
+        print('There is no algorithm called: ', algorithm)
